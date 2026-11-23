@@ -1,0 +1,1491 @@
+local Services = {
+    Http = game:GetService("HttpService"),
+    Players = game:GetService("Players"),
+    UserInput = game:GetService("UserInputService"),
+    RS = game:GetService("ReplicatedStorage"),
+    RunService = game:GetService("RunService"),
+    CoreGui = game:GetService("CoreGui"),
+    TweenService = game:GetService("TweenService")
+}
+
+local lp = Services.Players.LocalPlayer
+local folderPath = "PiggyMaps/"
+if makefolder then pcall(function() makefolder("PiggyMaps") end) end
+
+local LANG = {
+    English = {
+        ["AUTOBUILD"]="AUTOBUILD",["SELECT MAP"]="SELECT MAP",["PREVIEW LOCAL"]="PREVIEW LOCAL",["UPLOAD SERVER"]="UPLOAD SERVER",["CLEAR"]="CLEAR",["MOVE"]="MOVE",["ROTATE"]="ROTATE",["Status: Idle"]="Status: Idle",["Move Snap"]="Move Snap",["Angle Snap (deg)"]="Angle Snap (deg)",["SETTINGS"]="SETTINGS",["FILE MANAGER"]="FILE MANAGER",["SAVE MAP"]="SAVE MAP",["CANCEL"]="CANCEL",["FORMAT: NEW VERSION"]="FORMAT: NEW VERSION",["FORMAT: OLD VERSION"]="FORMAT: OLD VERSION",["ZONE EDITOR"]="ZONE EDITOR",["SPAWN ZONE"]="SPAWN ZONE",["TP ZONE TO ME"]="TP ZONE TO ME",["RESIZE BOX"]="RESIZE BOX",["SAVE AREA"]="SAVE AREA",["CLEAR BOX"]="CLEAR BOX",["INSTANT SAVE ALL"]="INSTANT SAVE ALL",["DUMP LINKS"]="DUMP LINKS",["Disable invisible blocks"]="Disable invisible blocks",["Dont Build InvBlocks"]="Don't Build Invisible Blocks",["Save InvLights?"]="Save InvLights?",["Load InvLights?"]="Load InvLights?",["Save Links?"]="Save Links?",["Load Links?"]="Load Links?",["Apply link config?"]="Apply link config?",["Auto-clear preview"]="Auto-clear preview",["Show warnings"]="Show warnings",["Preview transparency"]="Preview transparency",["Search timeout (s)"]="Search timeout (s)",["Build speed (s)"]="Build speed (s)",["Language"]="Language",["CLOSE"]="CLOSE",["Reset settings"]="Reset settings",["CREDITS AND LINKS"]="CREDITS AND LINKS",["ON"]="ON",["OFF"]="OFF",["hide"]="hide",["show"]="show",["Spawn zone first!"]="Spawn zone first!",["Resize Active"]="Resize Active",["Preview Loaded"]="Preview Loaded",["File not found"]="File not found",["Error: No preview active"]="Error: No preview active",["Error: Remotes not found"]="Error: Remotes not found",["No data to upload"]="No data to upload",["Upload Cancelled by user"]="Upload Cancelled by user",["Upload Finished"]="Upload Finished",["Saved: "]="Saved: ",["parts (size: "]="parts (size: ",["KB)"]="KB)",["Error saving file. Try again."]="Error saving file. Try again.",["Blocks: "]="Blocks: ",[" (fails: "]=" (fails: ",["Settings reset"]="Settings reset",["Skipped invisible blocks"]="Skipped invisible blocks",["Resize handles hidden"]="Resize handles hidden",["Resize handles shown"]="Resize handles shown",["Blocks in file:"]="Blocks in file:",["Instant Save Complete"]="Instant Save Complete",["Size: "]="Size: ",
+        ["WelcomeTitle"]="Welcome to RMS Links",
+        ["WelcomeText"]="This script is exclusively designed for importing and exporting Links from Piggy Build Mode.\n\nIf you experience issues importing maps, it's because map importing is not supported in this version.\n\nIf you encounter bugs while importing links, please report them on our Discord server.",
+        ["TranslateBtn"]="Translate",
+        ["AcceptBtn"]="Accept",
+        ["Include outside links?"]="Include outside links?"
+    },
+    Spanish = {
+        ["AUTOBUILD"]="AUTOCONSTRUIR",["SELECT MAP"]="SELECCIONAR MAPA",["PREVIEW LOCAL"]="VISTA PREVIA LOCAL",["UPLOAD SERVER"]="SUBIR AL SERVIDOR",["CLEAR"]="LIMPIAR",["MOVE"]="MOVER",["ROTATE"]="ROTAR",["Status: Idle"]="Estado: Inactivo",["Move Snap"]="Ajuste de movimiento",["Angle Snap (deg)"]="Ajuste de ángulo (grados)",["SETTINGS"]="AJUSTES",["FILE MANAGER"]="ADMINISTRADOR DE ARCHIVOS",["SAVE MAP"]="GUARDAR MAPA",["CANCEL"]="CANCELAR",["FORMAT: NEW VERSION"]="FORMATO: NUEVA VERSIÓN",["FORMAT: OLD VERSION"]="FORMATO: VIEJA VERSIÓN",["ZONE EDITOR"]="EDITOR DE ZONA",["SPAWN ZONE"]="ZONA DE APARICIÓN",["TP ZONE TO ME"]="TELEPORTAR ZONA A MÍ",["RESIZE BOX"]="REDIMENSIONAR CAJA",["SAVE AREA"]="GUARDAR ÁREA",["CLEAR BOX"]="LIMPIAR CAJA",["INSTANT SAVE ALL"]="GUARDADO INSTANTÁNEO",["DUMP LINKS"]="VOLCAR ENLACES",["Disable invisible blocks"]="Desactivar bloques invisibles",["Dont Build InvBlocks"]="No construir bloques invisibles",["Save InvLights?"]="¿Guardar InvLights?",["Load InvLights?"]="¿Cargar InvLights?",["Save Links?"]="¿Guardar enlaces?",["Load Links?"]="¿Cargar enlaces?",["Apply link config?"]="¿Aplicar config. de enlaces?",["Auto-clear preview"]="Limpiar vista previa automáticamente",["Show warnings"]="Mostrar advertencias",["Preview transparency"]="Transparencia de vista previa",["Search timeout (s)"]="Tiempo de búsqueda (s)",["Build speed (s)"]="Velocidad de construcción (s)",["Language"]="Idioma",["CLOSE"]="CERRAR",["Reset settings"]="Restablecer ajustes",["CREDITS AND LINKS"]="CRÉDITOS Y ENLACES",["ON"]="ACTIVADO",["OFF"]="DESACTIVADO",["hide"]="ocultar",["show"]="mostrar",["Spawn zone first!"]="¡Primero crea la zona!",["Resize Active"]="Redimensionando",["Preview Loaded"]="Vista previa cargada",["File not found"]="Archivo no encontrado",["Error: No preview active"]="Error: No hay vista previa activa",["Error: Remotes not found"]="Error: No se encontraron los remotes",["No data to upload"]="No hay datos para subir",["Upload Cancelled by user"]="Subida cancelada por el usuario",["Upload Finished"]="Subida finalizada",["Saved: "]="Guardado: ",["parts (size: "]="partes (tamaño: ",["KB)"]="KB)",["Error saving file. Try again."]="Error al guardar. Intenta de nuevo.",["Blocks: "]="Bloques: ",[" (fails: "]=" (fallos: ",["Settings reset"]="Ajustes restablecidos",["Skipped invisible blocks"]="Bloques invisibles omitidos",["Resize handles hidden"]="Controles de redimensionamiento ocultos",["Resize handles shown"]="Controles de redimensionamiento mostrados",["Blocks in file:"]="Bloques en archivo:",["Instant Save Complete"]="Guardado instantáneo completo",["Size: "]="Tamaño: ",
+        ["WelcomeTitle"]="Bienvenido a RMS Links",
+        ["WelcomeText"]="Este script está diseñado exclusivamente para importar y exportar Enlaces (Links) de Piggy Build Mode.\n\nSi tienes problemas al importar mapas, es porque la importación de mapas no está soportada en esta versión.\n\nSi encuentras errores al importar enlaces, por favor repórtalos en nuestro servidor de Discord.",
+        ["TranslateBtn"]="Traducir",
+        ["AcceptBtn"]="Aceptar",
+        ["Include outside links?"]="¿Incluir enlaces externos?"
+    },
+    Portuguese = {
+        ["AUTOBUILD"]="AUTOCONSTRUIR",["SELECT MAP"]="SELECIONAR MAPA",["PREVIEW LOCAL"]="PRÉ-VISUALIZAÇÃO LOCAL",["UPLOAD SERVER"]="ENVIAR PARA SERVIDOR",["CLEAR"]="LIMPAR",["MOVE"]="MOVER",["ROTATE"]="GIRAR",["Status: Idle"]="Status: Inativo",["Move Snap"]="Ajuste de movimento",["Angle Snap (deg)"]="Ajuste de ângulo (graus)",["SETTINGS"]="CONFIGURAÇÕES",["FILE MANAGER"]="GERENCIADOR DE ARQUIVOS",["SAVE MAP"]="SALVAR MAPA",["CANCEL"]="CANCELAR",["FORMAT: NEW VERSION"]="FORMATO: NOVA VERSÃO",["FORMAT: OLD VERSION"]="FORMATO: VERSÃO ANTIGA",["ZONE EDITOR"]="EDITOR DE ZONA",["SPAWN ZONE"]="ZONA DE SPAWN",["TP ZONE TO ME"]="TELEPORTAR ZONA PARA MIM",["RESIZE BOX"]="REDIMENSIONAR CAIXA",["SAVE AREA"]="SALVAR ÁREA",["CLEAR BOX"]="LIMPAR CAIXA",["INSTANT SAVE ALL"]="SALVAR TUDO INSTANTÂNEO",["DUMP LINKS"]="DESPEJAR LINKS",["Disable invisible blocks"]="Desativar blocos invisíveis",["Dont Build InvBlocks"]="Não construir blocos invisíveis",["Save InvLights?"]="Salvar InvLights?",["Load InvLights?"]="Carregar InvLights?",["Save Links?"]="Salvar links?",["Load Links?"]="Carregar links?",["Apply link config?"]="Aplicar config. de links?",["Auto-clear preview"]="Limpar pré-visualização automaticamente",["Show warnings"]="Mostrar avisos",["Preview transparency"]="Transparência da pré-visualização",["Search timeout (s)"]="Tempo de busca (s)",["Build speed (s)"]="Velocidade de construção (s)",["Language"]="Idioma",["CLOSE"]="FECHAR",["Reset settings"]="Restaurar configurações",["CREDITS AND LINKS"]="CRÉDITOS E LINKS",["ON"]="LIGADO",["OFF"]="DESLIGADO",["hide"]="ocultar",["show"]="mostrar",["Spawn zone first!"]="Crie a zona primeiro!",["Resize Active"]="Redimensionando",["Preview Loaded"]="Pré-visualização carregada",["File not found"]="Arquivo não encontrado",["Error: No preview active"]="Erro: Nenhuma pré-visualização ativa",["Error: Remotes not found"]="Erro: Remotes não encontrados",["No data to upload"]="Sem dados para enviar",["Upload Cancelled by user"]="Envio cancelado pelo usuário",["Upload Finished"]="Envio finalizado",["Saved: "]="Salvo: ",["parts (size: "]="partes (tamanho: ",["KB)"]="KB)",["Error saving file. Try again."]="Erro ao salvar. Tente novamente.",["Blocks: "]="Blocos: ",[" (fails: "]=" (falhas: ",["Settings reset"]="Configurações restauradas",["Skipped invisible blocks"]="Blocos invisíveis ignorados",["Resize handles hidden"]="Controles de redimensionamento ocultos",["Resize handles shown"]="Controles de redimensionamento mostrados",["Blocks in file:"]="Blocos no arquivo:",["Instant Save Complete"]="Salvamento instantâneo completo",["Size: "]="Tamanho: ",
+        ["WelcomeTitle"]="Bem-vindo ao RMS Links",
+        ["WelcomeText"]="Este script é projetado exclusivamente para importar e exportar Links do Piggy Build Mode.\n\nSe você tiver problemas ao importar mapas, é porque a importação de mapas não é suportada nesta versão.\n\nSe você encontrar bugs ao importar links, por favor reporte-os no nosso servidor do Discord.",
+        ["TranslateBtn"]="Traduzir",
+        ["AcceptBtn"]="Aceitar",
+        ["Include outside links?"]="Incluir links externos?"
+    }
+}
+
+local currentLanguage = "English"
+local function translate(key) return LANG[currentLanguage][key] or key end
+
+-- ================= FIRST-TIME WELCOME PANEL =================
+local ackFile = folderPath .. "welcome_ack.txt"
+if not isfile(ackFile) then
+    local WelcomeGUI = Instance.new("ScreenGui")
+    WelcomeGUI.Name = "WelcomeGUI"
+    WelcomeGUI.ResetOnSpawn = false
+    WelcomeGUI.Parent = lp:WaitForChild("PlayerGui")
+    WelcomeGUI.DisplayOrder = 999
+    
+    local WFrame = Instance.new("Frame")
+    WFrame.Size = UDim2.new(0, 420, 0, 280)
+    WFrame.Position = UDim2.new(0.5, -210, 0.5, -140)
+    WFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
+    WFrame.BorderSizePixel = 0
+    WFrame.Parent = WelcomeGUI
+    Instance.new("UICorner", WFrame).CornerRadius = UDim.new(0, 12)
+    
+    local WTitle = Instance.new("TextLabel")
+    WTitle.Size = UDim2.new(1, 0, 0, 40)
+    WTitle.BackgroundTransparency = 1
+    WTitle.Text = translate("WelcomeTitle")
+    WTitle.TextColor3 = Color3.fromRGB(0, 200, 255)
+    WTitle.Font = Enum.Font.GothamBold
+    WTitle.TextSize = 18
+    WTitle.Parent = WFrame
+    
+    local WText = Instance.new("TextLabel")
+    WText.Size = UDim2.new(1, -20, 1, -110)
+    WText.Position = UDim2.new(0, 10, 0, 40)
+    WText.BackgroundTransparency = 1
+    WText.Text = translate("WelcomeText")
+    WText.TextColor3 = Color3.new(1,1,1)
+    WText.Font = Enum.Font.Gotham
+    WText.TextSize = 13
+    WText.TextWrapped = true
+    WText.TextYAlignment = Enum.TextYAlignment.Top
+    WText.Parent = WFrame
+    
+    local WTranslateBtn = Instance.new("TextButton")
+    WTranslateBtn.Size = UDim2.new(0.45, 0, 0, 35)
+    WTranslateBtn.Position = UDim2.new(0.03, 0, 1, -45)
+    WTranslateBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    WTranslateBtn.TextColor3 = Color3.new(1,1,1)
+    WTranslateBtn.Font = Enum.Font.GothamBold
+    WTranslateBtn.TextSize = 13
+    WTranslateBtn.Text = translate("TranslateBtn")
+    WTranslateBtn.Parent = WFrame
+    Instance.new("UICorner", WTranslateBtn).CornerRadius = UDim.new(0, 6)
+    
+    local WAcceptBtn = Instance.new("TextButton")
+    WAcceptBtn.Size = UDim2.new(0.45, 0, 0, 35)
+    WAcceptBtn.Position = UDim2.new(0.52, 0, 1, -45)
+    WAcceptBtn.BackgroundColor3 = Color3.fromRGB(0, 230, 118)
+    WAcceptBtn.TextColor3 = Color3.new(1,1,1)
+    WAcceptBtn.Font = Enum.Font.GothamBold
+    WAcceptBtn.TextSize = 13
+    WAcceptBtn.Text = translate("AcceptBtn")
+    WAcceptBtn.Parent = WFrame
+    Instance.new("UICorner", WAcceptBtn).CornerRadius = UDim.new(0, 6)
+    
+    WTranslateBtn.MouseButton1Click:Connect(function()
+        local langOrder = {"English","Spanish","Portuguese"}
+        local idx = table.find(langOrder, currentLanguage)
+        idx = idx and (idx % #langOrder) + 1 or 1
+        currentLanguage = langOrder[idx]
+        
+        WTitle.Text = translate("WelcomeTitle")
+        WText.Text = translate("WelcomeText")
+        WTranslateBtn.Text = translate("TranslateBtn")
+        WAcceptBtn.Text = translate("AcceptBtn")
+    end)
+    
+    WAcceptBtn.MouseButton1Click:Connect(function()
+        pcall(function() writefile(ackFile, "true") end)
+        WelcomeGUI:Destroy()
+    end)
+end
+
+-- ================= MAIN UI =================
+local ScreenGui = Instance.new("ScreenGui", lp.PlayerGui)
+ScreenGui.Name = "RMS"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local NotificationContainer = Instance.new("Frame")
+NotificationContainer.Name = "NotificationContainer"
+NotificationContainer.Size = UDim2.new(0, 300, 0, 0)
+NotificationContainer.Position = UDim2.new(0.5, -150, 0, 20)
+NotificationContainer.BackgroundTransparency = 1
+NotificationContainer.Parent = ScreenGui
+NotificationContainer.ZIndex = 999
+
+local function showNotification(text, duration, color)
+    duration = duration or 3
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 40)
+    frame.BackgroundColor3 = color or Color3.fromRGB(30,30,40)
+    frame.BorderSizePixel = 0
+    frame.BackgroundTransparency = 0.9
+    frame.Parent = NotificationContainer
+    frame.ZIndex = 1000
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1, -10, 1, 0)
+    label.Position = UDim2.new(0, 5, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.new(1,1,1)
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 14
+    label.TextWrapped = true
+    frame.Position = UDim2.new(0, 0, 0, -50)
+    frame:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Quad", 0.3, true)
+    task.wait(duration)
+    frame:TweenPosition(UDim2.new(0, 0, 0, -50), "In", "Quad", 0.3, true)
+    task.wait(0.35)
+    frame:Destroy()
+end
+
+local function formatTime(seconds)
+    if math.random() < 0.005 then return "1 year" end
+    seconds = math.max(0, math.floor(seconds + 0.5))
+    if seconds < 60 then return seconds .. "s"
+    elseif seconds < 3600 then
+        local m = math.floor(seconds / 60)
+        local s = seconds % 60
+        return s == 0 and m .. "m" or m .. "m " .. s .. "s"
+    else
+        local h = math.floor(seconds / 3600)
+        local m = math.floor((seconds % 3600) / 60)
+        return m == 0 and h .. "h" or h .. "h " .. m .. "m"
+    end
+end
+
+local cam = workspace.CurrentCamera
+local function lockCamera() cam.CameraType = Enum.CameraType.Scriptable end
+local function unlockCamera() cam.CameraType = Enum.CameraType.Custom end
+
+local _cachedPalette = nil
+local function getBrickColorPalette()
+    if _cachedPalette then return _cachedPalette end
+    _cachedPalette = {}
+    for i = 0, 127 do
+        local success, bc = pcall(function() return BrickColor.palette(i) end)
+        if success and bc then table.insert(_cachedPalette, bc) end
+    end
+    if #_cachedPalette == 0 then
+        local fallbacks = {"Really black","Black","Dark stone grey","Medium stone grey","Light stone grey","White","Institutional white","Really red","Bright red","Really blue","Bright blue","Bright green","Earth green","Lime green","Olive","Bright yellow","Bright orange","Nougat","Brick yellow","Reddish brown","Brown","Bright violet","Cyan","Magenta","Pastel green","Navy blue","Dark green","Sand green","Grime","Fossil"}
+        for _, name in ipairs(fallbacks) do
+            local success, bc = pcall(function() return BrickColor.new(name) end)
+            if success and bc then table.insert(_cachedPalette, bc) end
+        end
+    end
+    return _cachedPalette
+end
+
+local function getBestBrickColor(color)
+    local palette = getBrickColorPalette()
+    if #palette == 0 then return BrickColor.new(color) end
+    local maxC = math.max(color.r, color.g, color.b)
+    local minC = math.min(color.r, color.g, color.b)
+    local satInput = maxC > 0 and (maxC - minC) / maxC or 0
+    local isGreyInput = satInput < 0.18
+    local isGreenInput = color.g > color.r * 1.15 and color.g > color.b * 1.15
+    
+    local best = palette[1]
+    local minDist = math.huge
+    for _, bc in ipairs(palette) do
+        local c = bc.Color
+        local dr = color.r - c.r
+        local dg = color.g - c.g
+        local db = color.b - c.b
+        local dist = dr*dr + dg*dg + db*db
+        local bcMax = math.max(c.r, c.g, c.b)
+        local bcMin = math.min(c.r, c.g, c.b)
+        local bcSat = bcMax > 0 and (bcMax - bcMin) / bcMax or 0
+        local isGreyBc = bcSat < 0.18
+        local isGreenBc = c.g > c.r * 1.15 and c.g > c.b * 1.15
+        
+        if isGreyInput and not isGreyBc then dist = dist * 5.0
+        elseif (not isGreyInput) and isGreyBc then dist = dist * 1.3 end
+        if isGreenInput and not isGreenBc then dist = dist * 4.0 end
+        if dist < minDist then minDist = dist; best = bc end
+    end
+    return best
+end
+
+local Colors = {
+    Primary = Color3.fromRGB(0, 200, 255),
+    Secondary = Color3.fromRGB(0, 150, 255),
+    Accent = Color3.fromRGB(255, 70, 70),
+    Success = Color3.fromRGB(0, 230, 118),
+    Background = Color3.fromRGB(15, 15, 25),
+    Panel = Color3.fromRGB(25, 25, 40),
+    Dark = Color3.fromRGB(10, 10, 18),
+}
+
+local ProgressFrame = Instance.new("Frame")
+ProgressFrame.Name = "LoadingUI"
+ProgressFrame.Size = UDim2.new(0, 420, 0, 70)
+ProgressFrame.Position = UDim2.new(0.5, -210, 0.5, -35)
+ProgressFrame.BackgroundColor3 = Colors.Dark
+ProgressFrame.BackgroundTransparency = 0.15
+ProgressFrame.BorderSizePixel = 0
+ProgressFrame.Visible = false
+ProgressFrame.Parent = ScreenGui
+ProgressFrame.ZIndex = 50
+Instance.new("UICorner", ProgressFrame).CornerRadius = UDim.new(0, 12)
+
+local Fill = Instance.new("Frame", ProgressFrame)
+Fill.Size = UDim2.new(0, 0, 0, 12)
+Fill.Position = UDim2.new(0, 10, 0, 45)
+Fill.BackgroundColor3 = Colors.Success
+Fill.BorderSizePixel = 0
+Fill.ZIndex = 51
+Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 6)
+
+local ProgressText = Instance.new("TextLabel", ProgressFrame)
+ProgressText.Size = UDim2.new(1, -60, 0, 30)
+ProgressText.Position = UDim2.new(0, 10, 0, 10)
+ProgressText.BackgroundTransparency = 1
+ProgressText.Text = "loading..."
+ProgressText.TextColor3 = Color3.new(1,1,1)
+ProgressText.Font = Enum.Font.GothamBold
+ProgressText.TextSize = 16
+ProgressText.TextXAlignment = Enum.TextXAlignment.Left
+ProgressText.ZIndex = 52
+
+local CancelBtn = Instance.new("ImageButton", ProgressFrame)
+CancelBtn.Size = UDim2.new(0, 40, 0, 40)
+CancelBtn.Position = UDim2.new(1, -50, 0, 15)
+CancelBtn.BackgroundTransparency = 1
+CancelBtn.Image = "rbxassetid://73586310552988"
+CancelBtn.ZIndex = 60
+Instance.new("UICorner", CancelBtn).CornerRadius = UDim.new(1, 0)
+
+local uploadCancelFlag = false
+CancelBtn.MouseButton1Click:Connect(function()
+    uploadCancelFlag = true
+    ProgressText.Text = "Cancelling..."
+end)
+
+local PreviewFolder = Instance.new("Folder")
+PreviewFolder.Name = "LocalPreview"
+PreviewFolder.Parent = workspace
+
+local SelectionPart = Instance.new("Part")
+SelectionPart.Name = "ZoneBox"
+SelectionPart.Size = Vector3.new(20, 20, 20)
+SelectionPart.Color = Color3.fromRGB(0, 0, 255)
+SelectionPart.Material = Enum.Material.Neon
+SelectionPart.Transparency = 0.6
+SelectionPart.CanCollide = false
+SelectionPart.Anchored = true
+
+local SelectionOutline = Instance.new("SelectionBox")
+SelectionOutline.Name = "Outline"
+SelectionOutline.Color3 = Color3.fromRGB(0, 0, 255)
+SelectionOutline.LineThickness = 0.1
+SelectionOutline.Adornee = nil
+SelectionOutline.Parent = Services.CoreGui
+
+local Sustitutos = {}
+local function loadAssets()
+    pcall(function()
+        local blocks = Services.RS:FindFirstChild("Blocks") or Services.RS:WaitForChild("Blocks", 10)
+        if not blocks then return end
+        local basic = blocks:FindFirstChild("Basic") or blocks:WaitForChild("Basic", 5)
+        if basic then
+            local bf = basic:FindFirstChild("Block"); if bf then Sustitutos["Standard"] = bf:FindFirstChild("Block") end
+            local sf = basic:FindFirstChild("Sphere "); if sf then Sustitutos["Sphere"] = sf:FindFirstChild("Sphere ") end
+            local wf = basic:FindFirstChild("Wedge"); if wf then Sustitutos["Wedge"] = wf:FindFirstChild("Wedge") end
+            local cf = basic:FindFirstChild("Cylinder"); if cf then Sustitutos["Cylinder"] = cf:FindFirstChild("Cylinder") end
+            local tf = basic:FindFirstChild("TransparentBlock"); if tf then Sustitutos["Transparent"] = tf:FindFirstChild("TransparentBlock") end
+            local nf = basic:FindFirstChild("NoclipBlock"); if nf then Sustitutos["NoclipBasic"] = nf:FindFirstChild("NoclipBlock") end
+        end
+        local events = blocks:FindFirstChild("Events") or blocks:WaitForChild("Events", 5)
+        if events then
+            Sustitutos["NoClipEvent"] = events:FindFirstChild("NoClipBlock") or events:FindFirstChild("NoClip")
+            local invFolder = events:FindFirstChild("InvisibleBlock")
+            if invFolder then Sustitutos["Invisible"] = invFolder:FindFirstChild("InvisibleBlock") or invFolder:FindFirstChildOfClass("Model") or invFolder end
+        end
+        local lights = blocks:FindFirstChild("Lights")
+        if lights then
+            local cilb = lights:FindFirstChild("CustomInvisibleLightBlock")
+            if cilb then Sustitutos["InvisibleLight"] = cilb:FindFirstChild("CustomInvisibleLightBlock") or cilb:FindFirstChildOfClass("Model") or cilb end
+        end
+    end)
+end
+loadAssets()
+
+local function getRemotes()
+    local f = Services.RS:FindFirstChild("Functions")
+    if f then
+        return { PlaceBlock = f:FindFirstChild("PlaceBlock"), CommitResize = f:FindFirstChild("CommitResize"), CommitMove = f:FindFirstChild("CommitMove"), UpdateBlockSettings = f:FindFirstChild("UpdateBlockSettings"), UpdateBlockLink = f:FindFirstChild("UpdateBlockLink"), GetChildLinks = f:FindFirstChild("GetChildLinks") }
+    end
+    return { PlaceBlock = Services.RS:FindFirstChild("PlaceBlock", true), CommitResize = Services.RS:FindFirstChild("CommitResize", true), CommitMove = Services.RS:FindFirstChild("CommitMove", true), UpdateBlockSettings = Services.RS:FindFirstChild("UpdateBlockSettings", true), UpdateBlockLink = Services.RS:FindFirstChild("UpdateBlockLink", true), GetChildLinks = Services.RS:FindFirstChild("GetChildLinks", true) }
+end
+
+local function getPiggyBlockType(p)
+    local sName = "Block"
+    pcall(function() if p:IsA("TrussPart") then sName = "Truss" elseif p:IsA("Part") then sName = p.Shape.Name end end)
+    local lowName = p.Name:lower()
+    local hasLight = p:FindFirstChildWhichIsA("PointLight") or p:FindFirstChildWhichIsA("SurfaceLight") or p:FindFirstChildWhichIsA("SpotLight")
+    if lowName:find("noclip") then return "NoClip"
+    elseif sName == "Truss" or lowName:find("truss") or lowName:find("ladder") then return "Normal"
+    elseif sName == "Cylinder" or lowName:find("cylinder") then return "Cylinder"
+    elseif (p.Transparency > 0 and p.Transparency < 0.9) or p.Material.Name == "Glass" then return "Transparent"
+    elseif lowName:find("invisible") or p.Transparency >= 0.9 then if hasLight then return "InvisibleLight" else return "Invisible" end
+    elseif sName == "Ball" or sName == "Sphere" then return "Sphere"
+    elseif sName == "Wedge" or lowName:find("wedge") then return "Wedge" end
+    return "Normal"
+end
+
+local function createPanel(nameKey, size, pos)
+    local Main = Instance.new("Frame")
+    Main.Name = nameKey; Main.Size = size; Main.Position = pos
+    Main.BackgroundColor3 = Colors.Panel; Main.BackgroundTransparency = 0.1; Main.Active = true; Main.Draggable = true
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+    local shadow = Instance.new("ImageLabel", Main); shadow.Size = UDim2.new(1, 10, 1, 10); shadow.Position = UDim2.new(0, -5, 0, -5); shadow.BackgroundTransparency = 1; shadow.Image = "rbxassetid://1316048017"; shadow.ImageColor3 = Color3.new(0,0,0); shadow.ImageTransparency = 0.5; shadow.ZIndex = -1
+    local Header = Instance.new("Frame", Main); Header.Size = UDim2.new(1, 0, 0, 40); Header.BackgroundColor3 = Colors.Secondary; Header.BackgroundTransparency = 0.85
+    Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 12)
+    local Title = Instance.new("TextLabel", Header); Title.Size = UDim2.new(0.8, 0, 1, 0); Title.Position = UDim2.fromOffset(12, 0); Title.Text = translate(nameKey); Title:SetAttribute("TranslationKey", nameKey); Title.TextColor3 = Color3.new(1,1,1); Title.Font = Enum.Font.GothamBold; Title.TextSize = 12; Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left
+    local Content = Instance.new("Frame", Main); Content.Name = "Content"; Content.Size = UDim2.new(1, -20, 1, -50); Content.Position = UDim2.fromOffset(10, 45); Content.BackgroundTransparency = 1
+    local MinBtn = Instance.new("TextButton", Header); MinBtn.Size = UDim2.fromOffset(30, 30); MinBtn.Position = UDim2.new(1, -38, 0, 5); MinBtn.Text = "-"; MinBtn.BackgroundColor3 = Color3.fromRGB(40,40,60); MinBtn.TextColor3 = Color3.new(1,1,1); MinBtn.Font = Enum.Font.GothamBold; MinBtn.TextSize = 16
+    Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 6)
+    local isMin = false
+    MinBtn.MouseButton1Click:Connect(function()
+        isMin = not isMin; Content.Visible = not isMin; Main:TweenSize(isMin and UDim2.fromOffset(size.X.Offset, 40) or size, "Out", "Quad", 0.3, true); MinBtn.Text = isMin and "+" or "-"; Header.BackgroundTransparency = isMin and 0.95 or 0.85
+    end)
+    return Main, Content
+end
+
+local PanelExplorer, ExpContent = createPanel("FILE MANAGER", UDim2.fromOffset(300, 420), UDim2.new(0.5, -150, 0.5, -210))
+PanelExplorer.Visible = false; PanelExplorer.ZIndex = 100
+
+local ExpNameInput = Instance.new("TextBox", ExpContent); ExpNameInput.Size = UDim2.new(1, 0, 0, 35); ExpNameInput.BackgroundColor3 = Colors.Dark; ExpNameInput.TextColor3 = Color3.new(1,1,1); ExpNameInput.Font = Enum.Font.Gotham; ExpNameInput.TextSize = 12; ExpNameInput.ZIndex = 101
+Instance.new("UICorner", ExpNameInput).CornerRadius = UDim.new(0, 6)
+
+local ExpScroll = Instance.new("ScrollingFrame", ExpContent); ExpScroll.Size = UDim2.new(1, 0, 1, -140); ExpScroll.Position = UDim2.fromOffset(0, 45); ExpScroll.BackgroundColor3 = Colors.Dark; ExpScroll.BackgroundTransparency = 0.5; ExpScroll.ScrollBarThickness = 4; ExpScroll.ZIndex = 101
+Instance.new("UICorner", ExpScroll).CornerRadius = UDim.new(0, 6)
+Instance.new("UIListLayout", ExpScroll).Padding = UDim.new(0, 4)
+
+local ExpModeBtn = Instance.new("TextButton", ExpContent); ExpModeBtn.Size = UDim2.new(1, 0, 0, 35); ExpModeBtn.Position = UDim2.new(0, 0, 1, -85); ExpModeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 160); ExpModeBtn.TextColor3 = Color3.new(1,1,1); ExpModeBtn.Font = Enum.Font.GothamBold; ExpModeBtn.TextSize = 12; ExpModeBtn.ZIndex = 101
+Instance.new("UICorner", ExpModeBtn).CornerRadius = UDim.new(0, 6)
+ExpModeBtn:SetAttribute("TranslationKey", "FORMAT: NEW VERSION")
+
+local ExpConfirmBtn = Instance.new("TextButton", ExpContent); ExpConfirmBtn.Size = UDim2.new(0.48, 0, 0, 35); ExpConfirmBtn.Position = UDim2.new(0, 0, 1, -40); ExpConfirmBtn.BackgroundColor3 = Colors.Success; ExpConfirmBtn.TextColor3 = Color3.new(1,1,1); ExpConfirmBtn.Font = Enum.Font.GothamBold; ExpConfirmBtn.TextSize = 12; ExpConfirmBtn.ZIndex = 101
+Instance.new("UICorner", ExpConfirmBtn).CornerRadius = UDim.new(0, 6)
+ExpConfirmBtn:SetAttribute("TranslationKey", "SAVE MAP")
+
+local ExpCancelBtn = Instance.new("TextButton", ExpContent); ExpCancelBtn.Size = UDim2.new(0.48, 0, 0, 35); ExpCancelBtn.Position = UDim2.new(0.52, 0, 1, -40); ExpCancelBtn.BackgroundColor3 = Colors.Accent; ExpCancelBtn.TextColor3 = Color3.new(1,1,1); ExpCancelBtn.Font = Enum.Font.GothamBold; ExpCancelBtn.TextSize = 12; ExpCancelBtn.ZIndex = 101
+Instance.new("UICorner", ExpCancelBtn).CornerRadius = UDim.new(0, 6)
+ExpCancelBtn:SetAttribute("TranslationKey", "CANCEL")
+
+local expCallback, currentFormat = nil, "NEW"
+ExpModeBtn.MouseButton1Click:Connect(function()
+    if currentFormat == "NEW" then currentFormat = "OLD"; ExpModeBtn.BackgroundColor3 = Color3.fromRGB(160, 100, 50); ExpModeBtn:SetAttribute("TranslationKey", "FORMAT: OLD VERSION")
+    else currentFormat = "NEW"; ExpModeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 160); ExpModeBtn:SetAttribute("TranslationKey", "FORMAT: NEW VERSION") end
+    ExpModeBtn.Text = translate(ExpModeBtn:GetAttribute("TranslationKey"))
+end)
+ExpCancelBtn.MouseButton1Click:Connect(function() PanelExplorer.Visible = false end)
+ExpConfirmBtn.MouseButton1Click:Connect(function() PanelExplorer.Visible = false; if expCallback then expCallback(ExpNameInput.Text, currentFormat) end end)
+
+local function refreshFileList()
+    for _, v in ipairs(ExpScroll:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    local files = {}
+    if listfiles then
+        pcall(function()
+            for _, file in ipairs(listfiles(folderPath)) do
+                local name = file:match("([^/\\]+)%.json$")
+                if name and isfile(file) then
+                    local sizeKb = 0; pcall(function() sizeKb = string.len(readfile(file)) / 1024 end)
+                    table.insert(files, {name = name, size = string.format("%.1f KB", sizeKb)})
+                end
+            end
+        end)
+    end
+    for _, f in ipairs(files) do
+        local btn = Instance.new("TextButton", ExpScroll)
+        btn.Size = UDim2.new(1, 0, 0, 28); btn.BackgroundColor3 = Colors.Dark; btn.BackgroundTransparency = 0.5; btn.TextColor3 = Color3.new(1,1,1); btn.Text = f.name .. " (" .. f.size .. ")"; btn.Font = Enum.Font.Gotham; btn.TextSize = 11; btn.ZIndex = 102
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+        btn.MouseButton1Click:Connect(function() ExpNameInput.Text = f.name end)
+    end
+    ExpScroll.CanvasSize = UDim2.new(0, 0, 0, #files * 32)
+end
+
+local function openFileManager(mode, defaultText, callback)
+    PanelExplorer.Parent = ScreenGui
+    local isSaveMode = (mode == "SAVE")
+    ExpModeBtn.Visible = isSaveMode
+    if isSaveMode then ExpScroll.Size = UDim2.new(1, 0, 1, -145); ExpConfirmBtn:SetAttribute("TranslationKey", "SAVE MAP"); ExpModeBtn:SetAttribute("TranslationKey", currentFormat == "NEW" and "FORMAT: NEW VERSION" or "FORMAT: OLD VERSION")
+    else ExpScroll.Size = UDim2.new(1, 0, 1, -95); ExpConfirmBtn:SetAttribute("TranslationKey", "SELECT MAP") end
+    ExpNameInput.Text = defaultText; expCallback = callback; refreshFileList(); PanelExplorer.Visible = true
+    ExpModeBtn.Text = translate(ExpModeBtn:GetAttribute("TranslationKey")); ExpConfirmBtn.Text = translate(ExpConfirmBtn:GetAttribute("TranslationKey"))
+end
+
+local currentPreviewModel = nil
+local arcHandle, posHandle, scaleHandle, boundingPart = nil, nil, nil, nil
+
+local function cleanupHandles()
+    if arcHandle then arcHandle:Destroy(); arcHandle = nil end
+    if posHandle then posHandle:Destroy(); posHandle = nil end
+    if scaleHandle then scaleHandle:Destroy(); scaleHandle = nil end
+    if boundingPart then boundingPart:Destroy(); boundingPart = nil end
+    SelectionOutline.Adornee = nil; unlockCamera()
+end
+
+local function updateBoundingPart()
+    if not currentPreviewModel then return end
+    if boundingPart then boundingPart:Destroy() end
+    local cnf, size = currentPreviewModel:GetBoundingBox()
+    boundingPart = Instance.new("Part"); boundingPart.Name = "RMS_BoundingBox"; boundingPart.Transparency = 1; boundingPart.CanCollide = false; boundingPart.Anchored = true
+    boundingPart.Size = size; boundingPart.CFrame = cnf; boundingPart.Parent = currentPreviewModel
+end
+
+local function activateZoneScale()
+    if not SelectionPart.Parent then showNotification(translate("Spawn zone first!"), 2, Colors.Accent); return end
+    if scaleHandle then scaleHandle:Destroy(); scaleHandle = nil end
+    scaleHandle = Instance.new("Handles"); scaleHandle.Parent = ScreenGui; scaleHandle.Adornee = SelectionPart; scaleHandle.Style = Enum.HandlesStyle.Resize; scaleHandle.Color3 = Color3.fromRGB(0, 200, 255)
+    local lastDist = 0
+    scaleHandle.MouseButton1Down:Connect(function() lockCamera() end)
+    scaleHandle.MouseDrag:Connect(function(face, distance)
+        local snapped = math.floor(distance + 0.5); local delta = snapped - lastDist
+        if delta == 0 then return end
+        local normalId = Vector3.FromNormalId(face)
+        SelectionPart.Size = SelectionPart.Size + (Vector3.new(math.abs(normalId.X), math.abs(normalId.Y), math.abs(normalId.Z)) * delta)
+        SelectionPart.CFrame = SelectionPart.CFrame * CFrame.new(normalId * (delta / 2))
+        lastDist = snapped
+    end)
+    scaleHandle.MouseButton1Up:Connect(function() lastDist = 0; unlockCamera() end)
+    showNotification(translate("Resize Active"), 1.5, Colors.Success)
+end
+
+-- SE ELIMINARON savePlayers, saveNPCs y skipDuplicates
+local settings = {
+    disableInvisible = false, dontBuildInvBlocks = false, buildDelay = 0.05,
+    autoClearPreview = false, showWarnings = true, searchTimeout = 20,
+    previewTransparency = 0.5, saveInvLights = true, loadInvLights = true,
+    saveLinks = true, loadLinks = true, applyLinkCfg = true,
+    includeConnectedLinks = true -- NUEVA CONFIGURACIÓN
+}
+
+-- ================= LINKS (compuertas Piggy) =================
+local function buildRoot() return workspace:FindFirstChild("BuildModel") or workspace:FindFirstChild("LoadedMap") end
+
+local linkNames = {}
+do
+    local b = Services.RS:FindFirstChild("Blocks")
+    if b then
+        for _, fname in ipairs({"Links", "Audio"}) do
+            local f = b:FindFirstChild(fname)
+            if f then for _, c in ipairs(f:GetChildren()) do linkNames[c.Name] = true end end
+        end
+    end
+end
+
+-- PARCHE: isGate más estricto (no confunde bloques no-linkables con compuertas)
+local function isGate(m)
+    if not m:IsA("Model") then return false end
+    if linkNames[m.Name] then return true end
+    local conf = m:FindFirstChild("Configuration")
+    return conf and conf:FindFirstChild("Link") ~= nil
+end
+
+local function gateOf(p)
+    local root = buildRoot()
+    local x = p.Parent
+    while x and x ~= root and x ~= workspace do
+        if isGate(x) then return x end
+        x = x.Parent
+    end
+    return nil
+end
+
+local function gateCF(g)
+    local m = g:FindFirstChild("MouseFilterPart")
+    if m and m:IsA("BasePart") then return m.CFrame end
+    return g:GetPivot()
+end
+
+local function readTargets(g)
+    local out, seen = {}, {}
+    local conf = g:FindFirstChild("Configuration")
+    local link = conf and conf:FindFirstChild("Link")
+    if not link then return out end
+    local function add(x)
+        local t = (typeof(x) == "Instance") and (isGate(x) and x or gateOf(x)) or nil
+        if t and t ~= g and not seen[t] then seen[t] = true; out[#out + 1] = t end
+    end
+    local gcl = getRemotes().GetChildLinks
+    if gcl then
+        local ok, res = pcall(function() return gcl:InvokeServer(g) end)
+        if ok and type(res) == "table" then
+            for _, v in pairs(res) do add(v) end
+        end
+    end
+    if link:IsA("ObjectValue") then add(link.Value) end
+    for _, v in ipairs(link:GetDescendants()) do
+        if v:IsA("ObjectValue") then add(v.Value) end
+    end
+    return out
+end
+
+local function readCfg(g)
+    local cfg = {}
+    local conf = g:FindFirstChild("Configuration")
+    if not conf then return cfg end
+    for _, v in ipairs(conf:GetChildren()) do
+        if v.Name ~= "Link" and v:IsA("ValueBase") then
+            if v:IsA("ObjectValue") then
+                local sel = v.Value
+                if sel and sel:IsDescendantOf(v) then cfg[v.Name] = { o = sel.Name } end
+            else
+                local val = v.Value
+                local t = type(val)
+                if t == "number" or t == "string" or t == "boolean" then cfg[v.Name] = val end
+            end
+        end
+    end
+    return cfg
+end
+
+local function applyLinkCfg(ubs, inst, cfg)
+    local conf = inst:FindFirstChild("Configuration") or inst:WaitForChild("Configuration", 3)
+    if not conf then return 1 end
+    local bad, diff, drops = 0, {}, {}
+    for k, v in pairs(cfg) do
+        local obj = conf:FindFirstChild(k)
+        if obj and obj:IsA("ValueBase") then
+            if type(v) == "table" then
+                local opt = v.o and obj:FindFirstChild(v.o)
+                if opt and obj.Value ~= opt then drops[#drops + 1] = { k, obj, opt, v.o } end
+            elseif type(v) == "number" and type(obj.Value) == "number" then
+                if math.abs(obj.Value - v) > 1e-6 then diff[k] = v end
+            elseif obj.Value ~= v then
+                diff[k] = v
+            end
+        end
+    end
+    if next(diff) then
+        if not pcall(function() ubs:InvokeServer(inst, diff) end) then bad = bad + 1 end
+    end
+    for _, dd in ipairs(drops) do
+        pcall(function() ubs:InvokeServer(inst, { [dd[1]] = dd[3] }) end)
+        task.wait(0.15)
+        if dd[2].Value ~= dd[3] then
+            pcall(function() ubs:InvokeServer(inst, { [dd[1]] = dd[4] }) end)
+            task.wait(0.15)
+            if dd[2].Value ~= dd[3] then bad = bad + 1 end
+        end
+    end
+    return bad
+end
+
+local function readLook(g)
+    local bc, mat = g:GetAttribute("Color"), g:GetAttribute("Material")
+    local bcName = (typeof(bc) == "BrickColor") and bc.Name or "Institutional white"
+    local matName = (typeof(mat) == "EnumItem") and mat.Name or "SmoothPlastic"
+    return bcName, matName
+end
+
+-- NUEVA LÓGICA: appendGates con soporte para links conectados externos
+local function appendGates(data, format, inZone)
+    local root = buildRoot()
+    if not root then return 0, 0 end
+    local list, idOf = {}, {}
+    local queue = {}
+    
+    -- Primera pasada: encontrar compuertas en la zona
+    for _, g in ipairs(root:GetChildren()) do
+        if isGate(g) and (not inZone or inZone(gateCF(g).Position)) then
+            table.insert(queue, g)
+            idOf[g] = true
+        end
+    end
+    
+    -- Segunda pasada: expandir conexiones si la configuración está activa
+    if settings.includeConnectedLinks and inZone then
+        local gcl = getRemotes().GetChildLinks
+        local i = 1
+        while i <= #queue do
+            local current = queue[i]
+            i = i + 1
+            
+            -- Buscar salientes (targets)
+            for _, t in ipairs(readTargets(current)) do
+                if not idOf[t] and isGate(t) then
+                    idOf[t] = true
+                    table.insert(queue, t)
+                end
+            end
+            
+            -- Buscar entrantes (padres)
+            if gcl then
+                local ok, res = pcall(function() return gcl:InvokeServer(current) end)
+                if ok and type(res) == "table" then
+                    for _, v in pairs(res) do
+                        local t = gateOf(v)
+                        if t and not idOf[t] and isGate(t) then
+                            idOf[t] = true
+                            table.insert(queue, t)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Reconstruir idOf para guardar
+    idOf = {}
+    for _, g in ipairs(queue) do
+        table.insert(list, g)
+        idOf[g] = #list
+    end
+
+    local edges = 0
+    for i, g in ipairs(list) do
+        local cf = gateCF(g)
+        local rx, ry, rz = cf:ToOrientation()
+        local bcName, matName = readLook(g)
+        local to = {}
+        for _, t in ipairs(readTargets(g)) do
+            if idOf[t] then to[#to + 1] = idOf[t]; edges = edges + 1 end
+        end
+        local e = { pt = "Link", gid = i, gt = g.Name, gcf = { cf:GetComponents() }, gbc = bcName, gm = matName, gcfg = readCfg(g), gto = to,
+            p = { cf.X, cf.Y, cf.Z }, r = { math.deg(rx), math.deg(ry), math.deg(rz) }, s = { 4.5, 4.5, 4.5 }, c = { 0, 0.78, 1 }, m = "Neon" }
+        if format ~= "NEW" then e.n = g.Name; e.shape = "Block"; e.t = 0 end
+        data[#data + 1] = e
+    end
+    return #list, edges
+end
+
+local function findTemplate(name)
+    local blocks = Services.RS:FindFirstChild("Blocks")
+    if not blocks then return nil end
+    local lf = blocks:FindFirstChild("Links")
+    local h = lf and lf:FindFirstChild(name)
+    local t = h and (h:FindFirstChild(name) or h:FindFirstChildOfClass("Model"))
+    if t then return t end
+    local any = nil
+    for _, v in ipairs(blocks:GetDescendants()) do
+        if v.Name == name and v:IsA("Model") then
+            if v.Parent and v.Parent.Name == name then return v end
+            any = any or v
+        end
+    end
+    return any
+end
+
+-- PARCHE: placeLink fuerza CommitMove para posicionar exactamente
+local function placeLink(pb, d, cf)
+    local tpl = findTemplate(d.gt)
+    local root = buildRoot()
+    if not tpl or not root then return nil end
+    local okM, mat = pcall(function() return Enum.Material[d.gm or "SmoothPlastic"] end)
+    if not okM or not mat then mat = Enum.Material.SmoothPlastic end
+    local before = {}
+    for _, c in ipairs(root:GetChildren()) do before[c] = true end
+    local ok, ret = pcall(function() return pb:InvokeServer(tpl, cf, BrickColor.new(d.gbc or "Institutional white"), mat) end)
+    if not ok then return nil end
+    
+    local inst = nil
+    if typeof(ret) == "Instance" and ret.Parent and ret:IsA("Model") then
+        inst = ret
+    else
+        local t0 = tick()
+        while tick() - t0 < (settings.searchTimeout or 20) and not uploadCancelFlag do
+            for _, c in ipairs(root:GetChildren()) do
+                if not before[c] and c.Name == d.gt then inst = c; break end
+            end
+            if inst then break end
+            task.wait(0.1)
+        end
+    end
+    
+    if inst then
+        local cm = getRemotes().CommitMove
+        if cm then
+            pcall(function() cm:InvokeServer(inst, cf) end)
+            task.wait(0.15)
+        end
+    end
+    return inst
+end
+
+local function dumpVal(v, depth)
+    depth = depth or 0
+    if depth > 3 then return "..." end
+    local t = typeof(v)
+    if t == "table" then
+        local s = "{"
+        for k, x in pairs(v) do s = s .. "[" .. dumpVal(k, depth + 1) .. "]=" .. dumpVal(x, depth + 1) .. ", " end
+        return s .. "}"
+    elseif t == "Instance" then return "<" .. v:GetFullName() .. ">" end
+    return tostring(v) .. "(" .. t .. ")"
+end
+
+local function dumpLinks()
+    local root = buildRoot()
+    if not root then return end
+    local gcl = getRemotes().GetChildLinks
+    local lines, seenName = {}, {}
+    for _, g in ipairs(root:GetChildren()) do
+        if isGate(g) and not seenName[g.Name] then
+            seenName[g.Name] = true
+            local tpl = findTemplate(g.Name)
+            lines[#lines + 1] = "=== " .. g.Name .. " " .. dumpVal(gateCF(g).Position) .. " TEMPLATE=" .. (tpl and tpl:GetFullName() or "NOT FOUND")
+            local conf0 = g:FindFirstChild("Configuration")
+            local baseDepth = conf0 and #conf0:GetFullName():split(".") or 0
+            for _, v in ipairs(conf0 and conf0:GetDescendants() or {}) do
+                local d = #v:GetFullName():split(".") - baseDepth
+                local val = v:IsA("ValueBase") and (" = " .. dumpVal(v.Value)) or ""
+                lines[#lines + 1] = string.rep("  ", d) .. v.ClassName .. " " .. v.Name .. val .. " attrs=" .. dumpVal(v:GetAttributes())
+            end
+            lines[#lines + 1] = "ConfigAttrs=" .. dumpVal(conf0 and conf0:GetAttributes() or {}) .. " ModelAttrs=" .. dumpVal(g:GetAttributes())
+            if gcl then
+                local ok, res = pcall(function() return gcl:InvokeServer(g) end)
+                lines[#lines + 1] = "GetChildLinks -> " .. tostring(ok) .. " " .. dumpVal(res)
+            end
+        end
+    end
+    local other = {}
+    for _, g in ipairs(root:GetChildren()) do
+        if not isGate(g) and g:FindFirstChild("Configuration") and not other[g.Name] then
+            other[g.Name] = true
+            lines[#lines + 1] = "### NON-GATE with Configuration: " .. g.Name .. " (" .. g.ClassName .. ")"
+            for _, v in ipairs(g.Configuration:GetDescendants()) do
+                lines[#lines + 1] = "  " .. v.ClassName .. " " .. v.Name .. (v:IsA("ValueBase") and (" = " .. dumpVal(v.Value)) or "") .. " attrs=" .. dumpVal(v:GetAttributes())
+            end
+        end
+    end
+    local lf = Services.RS:FindFirstChild("Blocks")
+    lf = lf and lf:FindFirstChild("Links")
+    if lf then
+        local names = {}
+        for _, c in ipairs(lf:GetChildren()) do names[#names + 1] = c.Name end
+        lines[#lines + 1] = "Blocks.Links = " .. table.concat(names, ", ")
+    end
+    local txt = table.concat(lines, "\n")
+    print(txt)
+    pcall(function() writefile(folderPath .. "links_dump.txt", txt) end)
+    showNotification("Dump: PiggyMaps/links_dump.txt", 3, Colors.Success)
+end
+-- ================= FIN LINKS =================
+
+local PanelSettings, SetContent = createPanel("SETTINGS", UDim2.fromOffset(300, 560), UDim2.new(0.5, -150, 0.5, -280))
+PanelSettings.Parent = ScreenGui; PanelSettings.Visible = false
+local toggleButtons = {}
+
+local function createToggle(parent, y, key, labelKey)
+    local lbl = Instance.new("TextLabel", parent); lbl.Size = UDim2.new(0.6, 0, 0, 28); lbl.Position = UDim2.fromOffset(0, y); lbl.Text = translate(labelKey); lbl:SetAttribute("TranslationKey", labelKey); lbl.TextColor3 = Color3.new(1,1,1); lbl.BackgroundTransparency = 1; lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 12; lbl.TextXAlignment = Enum.TextXAlignment.Left
+    local btn = Instance.new("TextButton", parent); btn.Size = UDim2.new(0.3, 0, 0, 28); btn.Position = UDim2.new(0.7, 0, 0, y); btn.Text = settings[key] and translate("ON") or translate("OFF"); btn.BackgroundColor3 = settings[key] and Colors.Success or Colors.Accent; btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.GothamBold; btn.TextSize = 11
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    table.insert(toggleButtons, {btn = btn, key = key})
+    btn.MouseButton1Click:Connect(function() settings[key] = not settings[key]; btn.Text = settings[key] and translate("ON") or translate("OFF"); btn.BackgroundColor3 = settings[key] and Colors.Success or Colors.Accent end)
+end
+
+local function createSlider(parent, y, key, labelKey, minVal, maxVal)
+    local lbl = Instance.new("TextLabel", parent); lbl.Size = UDim2.new(0.5, 0, 0, 28); lbl.Position = UDim2.fromOffset(0, y); lbl.Text = translate(labelKey) .. ": " .. string.format("%.2f", settings[key]); lbl:SetAttribute("TranslationKey", labelKey); lbl.TextColor3 = Color3.new(1,1,1); lbl.BackgroundTransparency = 1; lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 12; lbl.TextXAlignment = Enum.TextXAlignment.Left
+    local track = Instance.new("Frame", parent); track.Size = UDim2.new(0.3, 0, 0, 18); track.Position = UDim2.new(0.55, 0, 0, y + 5); track.BackgroundColor3 = Colors.Dark; Instance.new("UICorner", track).CornerRadius = UDim.new(0, 5)
+    local fill = Instance.new("Frame", track); fill.BackgroundColor3 = Colors.Primary; fill.Size = UDim2.new(math.clamp((settings[key] - minVal) / (maxVal - minVal), 0, 1), 0, 1, 0); Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 5)
+    local box = Instance.new("TextBox", parent); box.Size = UDim2.new(0.15, 0, 0, 28); box.Position = UDim2.new(0.85, 0, 0, y); box.Text = string.format("%.2f", settings[key]); box.BackgroundColor3 = Colors.Dark; box.TextColor3 = Color3.new(1,1,1); box.Font = Enum.Font.Gotham; box.TextSize = 11; Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
+    local drag = false
+    local function setVal(v)
+        v = math.clamp(v, minVal, maxVal); settings[key] = v; fill.Size = UDim2.new((v - minVal) / (maxVal - minVal), 0, 1, 0); box.Text = string.format("%.2f", v); lbl.Text = translate(labelKey) .. ": " .. string.format("%.2f", v)
+    end
+    track.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = true; local r = math.clamp((i.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1); setVal(minVal + r * (maxVal - minVal)) end end)
+    track.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end end)
+    Services.UserInput.InputChanged:Connect(function(i) if drag and i.UserInputType == Enum.UserInputType.MouseMovement then local r = math.clamp((i.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1); setVal(minVal + r * (maxVal - minVal)) end end)
+    box.FocusLost:Connect(function() local n = tonumber(box.Text); if n then setVal(n) else box.Text = string.format("%.2f", settings[key]) end end)
+end
+
+local yOff = 5
+-- Se eliminaron Save Players, Save NPCs y Skip Duplicates. Se añadió Include outside links.
+for _, pair in ipairs({ {"disableInvisible","Disable invisible blocks"},{"dontBuildInvBlocks","Dont Build InvBlocks"},{"autoClearPreview","Auto-clear preview"},{"showWarnings","Show warnings"},{"saveInvLights","Save InvLights?"},{"loadInvLights","Load InvLights?"},{"saveLinks","Save Links?"},{"loadLinks","Load Links?"},{"applyLinkCfg","Apply link config?"},{"includeConnectedLinks","Include outside links?"} }) do
+    createToggle(SetContent, yOff, pair[1], pair[2]); yOff = yOff + 32
+end
+createSlider(SetContent, yOff, "previewTransparency", "Preview transparency", 0, 1); yOff = yOff + 32
+createSlider(SetContent, yOff, "searchTimeout", "Search timeout (s)", 5, 30); yOff = yOff + 32
+createSlider(SetContent, yOff, "buildDelay", "Build speed (s)", 0.02, 1); yOff = yOff + 32
+
+local langLabel = Instance.new("TextLabel", SetContent); langLabel.Size = UDim2.new(0.4, 0, 0, 28); langLabel.Position = UDim2.fromOffset(0, yOff); langLabel.Text = translate("Language") .. ":"; langLabel:SetAttribute("TranslationKey", "Language"); langLabel.TextColor3 = Color3.new(1,1,1); langLabel.BackgroundTransparency = 1; langLabel.Font = Enum.Font.GothamBold; langLabel.TextSize = 12; langLabel.TextXAlignment = Enum.TextXAlignment.Left
+local langBtn = Instance.new("TextButton", SetContent); langBtn.Size = UDim2.new(0.3, 0, 0, 28); langBtn.Position = UDim2.new(0.7, 0, 0, yOff); langBtn.Text = currentLanguage; langBtn.BackgroundColor3 = Colors.Dark; langBtn.TextColor3 = Color3.new(1,1,1); langBtn.Font = Enum.Font.GothamBold; langBtn.TextSize = 11
+Instance.new("UICorner", langBtn).CornerRadius = UDim.new(0, 6)
+local langOrder = {"English","Spanish","Portuguese"}
+langBtn.MouseButton1Click:Connect(function()
+    local idx = table.find(langOrder, currentLanguage); idx = idx and (idx % #langOrder) + 1 or 1; currentLanguage = langOrder[idx]; langBtn.Text = currentLanguage; updateUITexts()
+end)
+yOff = yOff + 32
+
+local resetBtn = Instance.new("TextButton", SetContent); resetBtn.Size = UDim2.new(0.48, 0, 0, 32); resetBtn.Position = UDim2.new(0, 0, 0, yOff); resetBtn.Text = translate("Reset settings"); resetBtn:SetAttribute("TranslationKey", "Reset settings"); resetBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 50); resetBtn.TextColor3 = Color3.new(1,1,1); resetBtn.Font = Enum.Font.GothamBold; resetBtn.TextSize = 12
+Instance.new("UICorner", resetBtn).CornerRadius = UDim.new(0, 6)
+resetBtn.MouseButton1Click:Connect(function()
+    settings.disableInvisible = false; settings.dontBuildInvBlocks = false; settings.autoClearPreview = false; settings.showWarnings = true; settings.searchTimeout = 20; settings.buildDelay = 0.05; settings.previewTransparency = 0.5; settings.saveInvLights = true; settings.loadInvLights = true; settings.saveLinks = true; settings.loadLinks = true; settings.applyLinkCfg = true; settings.includeConnectedLinks = true
+    for _, t in ipairs(toggleButtons) do t.btn.Text = settings[t.key] and translate("ON") or translate("OFF"); t.btn.BackgroundColor3 = settings[t.key] and Colors.Success or Colors.Accent end
+    showNotification(translate("Settings reset"), 2, Colors.Success)
+end)
+
+local closeSetBtn = Instance.new("TextButton", SetContent); closeSetBtn.Size = UDim2.new(0.48, 0, 0, 32); closeSetBtn.Position = UDim2.new(0.52, 0, 0, yOff); closeSetBtn.Text = translate("CLOSE"); closeSetBtn:SetAttribute("TranslationKey", "CLOSE"); closeSetBtn.BackgroundColor3 = Colors.Secondary; closeSetBtn.TextColor3 = Color3.new(1,1,1); closeSetBtn.Font = Enum.Font.GothamBold; closeSetBtn.TextSize = 12
+Instance.new("UICorner", closeSetBtn).CornerRadius = UDim.new(0, 6)
+closeSetBtn.MouseButton1Click:Connect(function() PanelSettings.Visible = false end)
+
+local PanelBuild, BuildContent = createPanel("AUTOBUILD", UDim2.fromOffset(300, 400), UDim2.new(0.5, -260, 0.5, -320))
+PanelBuild.Parent = ScreenGui
+
+local MapInputBtn = Instance.new("TextButton", BuildContent); MapInputBtn.Size = UDim2.new(1, 0, 0, 38); MapInputBtn.Text = "Map1"; MapInputBtn.BackgroundColor3 = Colors.Dark; MapInputBtn.TextColor3 = Color3.new(1,1,1); MapInputBtn.Font = Enum.Font.GothamBold; MapInputBtn.TextSize = 13
+Instance.new("UICorner", MapInputBtn).CornerRadius = UDim.new(0, 8)
+MapInputBtn:SetAttribute("TranslationKey", "SELECT MAP")
+
+local MapBlockCountLabel = Instance.new("TextLabel", BuildContent); MapBlockCountLabel.Size = UDim2.new(1, 0, 0, 18); MapBlockCountLabel.Position = UDim2.fromOffset(0, 40); MapBlockCountLabel.Text = ""; MapBlockCountLabel.TextColor3 = Color3.fromRGB(200,200,200); MapBlockCountLabel.BackgroundTransparency = 1; MapBlockCountLabel.Font = Enum.Font.Gotham; MapBlockCountLabel.TextSize = 11; MapBlockCountLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local PreviewBtn = Instance.new("TextButton", BuildContent); PreviewBtn.Size = UDim2.new(1, 0, 0, 42); PreviewBtn.Position = UDim2.fromOffset(0, 60); PreviewBtn.Text = translate("PREVIEW LOCAL"); PreviewBtn:SetAttribute("TranslationKey", "PREVIEW LOCAL"); PreviewBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 200); PreviewBtn.TextColor3 = Color3.new(1,1,1); PreviewBtn.Font = Enum.Font.GothamBold; PreviewBtn.TextSize = 14
+Instance.new("UICorner", PreviewBtn).CornerRadius = UDim.new(0, 8)
+
+local UploadBtn = Instance.new("TextButton", BuildContent); UploadBtn.Size = UDim2.new(1, 0, 0, 42); UploadBtn.Position = UDim2.fromOffset(0, 112); UploadBtn.Text = translate("UPLOAD SERVER"); UploadBtn:SetAttribute("TranslationKey", "UPLOAD SERVER"); UploadBtn.BackgroundColor3 = Colors.Primary; UploadBtn.TextColor3 = Color3.new(1,1,1); UploadBtn.Font = Enum.Font.GothamBold; UploadBtn.TextSize = 14
+Instance.new("UICorner", UploadBtn).CornerRadius = UDim.new(0, 8)
+
+local ClearPrevBtn = Instance.new("TextButton", BuildContent); ClearPrevBtn.Size = UDim2.new(0.3, 0, 0, 32); ClearPrevBtn.Position = UDim2.fromOffset(0, 164); ClearPrevBtn.Text = translate("CLEAR"); ClearPrevBtn:SetAttribute("TranslationKey", "CLEAR"); ClearPrevBtn.BackgroundColor3 = Colors.Accent; ClearPrevBtn.TextColor3 = Color3.new(1,1,1); ClearPrevBtn.Font = Enum.Font.GothamBold; ClearPrevBtn.TextSize = 12
+Instance.new("UICorner", ClearPrevBtn).CornerRadius = UDim.new(0, 8)
+
+local MoveBtn = Instance.new("TextButton", BuildContent); MoveBtn.Size = UDim2.new(0.32, 0, 0, 32); MoveBtn.Position = UDim2.new(0.34, 0, 0, 164); MoveBtn.Text = translate("MOVE"); MoveBtn:SetAttribute("TranslationKey", "MOVE"); MoveBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200); MoveBtn.TextColor3 = Color3.new(1,1,1); MoveBtn.Font = Enum.Font.GothamBold; MoveBtn.TextSize = 12
+Instance.new("UICorner", MoveBtn).CornerRadius = UDim.new(0, 8)
+
+local RotateBtn = Instance.new("TextButton", BuildContent); RotateBtn.Size = UDim2.new(0.32, 0, 0, 32); RotateBtn.Position = UDim2.new(0.68, 0, 0, 164); RotateBtn.Text = translate("ROTATE"); RotateBtn:SetAttribute("TranslationKey", "ROTATE"); RotateBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200); RotateBtn.TextColor3 = Color3.new(1,1,1); RotateBtn.Font = Enum.Font.GothamBold; RotateBtn.TextSize = 12
+Instance.new("UICorner", RotateBtn).CornerRadius = UDim.new(0, 8)
+
+local Status = Instance.new("TextLabel", BuildContent); Status.Size = UDim2.new(1, 0, 0, 40); Status.Position = UDim2.fromOffset(0, 207); Status.Text = translate("Status: Idle"); Status:SetAttribute("TranslationKey", "Status: Idle"); Status.TextColor3 = Color3.fromRGB(200,200,200); Status.BackgroundTransparency = 1; Status.Font = Enum.Font.Gotham; Status.TextSize = 13; Status.TextWrapped = true
+
+local GridSnapLabel = Instance.new("TextLabel", BuildContent); GridSnapLabel.Size = UDim2.new(0.4, 0, 0, 22); GridSnapLabel.Position = UDim2.fromOffset(0, 252); GridSnapLabel.Text = translate("Move Snap"); GridSnapLabel:SetAttribute("TranslationKey", "Move Snap"); GridSnapLabel.TextColor3 = Color3.new(1,1,1); GridSnapLabel.BackgroundTransparency = 1; GridSnapLabel.Font = Enum.Font.GothamBold; GridSnapLabel.TextSize = 11
+local GridSnapBox = Instance.new("TextBox", BuildContent); GridSnapBox.Size = UDim2.new(0.2, 0, 0, 22); GridSnapBox.Position = UDim2.fromOffset(100, 252); GridSnapBox.Text = "1"; GridSnapBox.BackgroundColor3 = Colors.Dark; GridSnapBox.TextColor3 = Color3.new(1,1,1); GridSnapBox.Font = Enum.Font.Gotham; GridSnapBox.TextSize = 11
+Instance.new("UICorner", GridSnapBox).CornerRadius = UDim.new(0, 6)
+
+local AngleSnapLabel = Instance.new("TextLabel", BuildContent); AngleSnapLabel.Size = UDim2.new(0.4, 0, 0, 22); AngleSnapLabel.Position = UDim2.fromOffset(0, 282); AngleSnapLabel.Text = translate("Angle Snap (deg)"); AngleSnapLabel:SetAttribute("TranslationKey", "Angle Snap (deg)"); AngleSnapLabel.TextColor3 = Color3.new(1,1,1); AngleSnapLabel.BackgroundTransparency = 1; AngleSnapLabel.Font = Enum.Font.GothamBold; AngleSnapLabel.TextSize = 11
+local AngleSnapBox = Instance.new("TextBox", BuildContent); AngleSnapBox.Size = UDim2.new(0.2, 0, 0, 22); AngleSnapBox.Position = UDim2.fromOffset(100, 282); AngleSnapBox.Text = "15"; AngleSnapBox.BackgroundColor3 = Colors.Dark; AngleSnapBox.TextColor3 = Color3.new(1,1,1); AngleSnapBox.Font = Enum.Font.Gotham; AngleSnapBox.TextSize = 11
+Instance.new("UICorner", AngleSnapBox).CornerRadius = UDim.new(0, 6)
+
+local SettingsBtn = Instance.new("TextButton", BuildContent); SettingsBtn.Size = UDim2.new(0.4, 0, 0, 28); SettingsBtn.Position = UDim2.fromOffset(0, 317); SettingsBtn.Text = translate("SETTINGS"); SettingsBtn:SetAttribute("TranslationKey", "SETTINGS"); SettingsBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 150); SettingsBtn.TextColor3 = Color3.new(1,1,1); SettingsBtn.Font = Enum.Font.GothamBold; SettingsBtn.TextSize = 11
+Instance.new("UICorner", SettingsBtn).CornerRadius = UDim.new(0, 6)
+SettingsBtn.MouseButton1Click:Connect(function() PanelSettings.Visible = not PanelSettings.Visible end)
+
+local PanelZone, ZoneContent = createPanel("ZONE EDITOR", UDim2.fromOffset(220, 380), UDim2.new(0.5, 60, 0.5, -290))
+PanelZone.Parent = ScreenGui
+
+local function zoneBtn(textKey, pos, color)
+    local b = Instance.new("TextButton", ZoneContent); b.Size = UDim2.new(1, 0, 0, 36); b.Position = pos; b.Text = translate(textKey); b:SetAttribute("TranslationKey", textKey); b.BackgroundColor3 = color or Colors.Dark; b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.GothamBold; b.TextSize = 12
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    return b
+end
+
+local SpawnZ = zoneBtn("SPAWN ZONE", UDim2.fromOffset(0, 5), Color3.fromRGB(0, 150, 100))
+local MoveZ = zoneBtn("TP ZONE TO ME", UDim2.fromOffset(0, 46), Color3.fromRGB(0, 100, 200))
+local ResizeZ = zoneBtn("RESIZE BOX", UDim2.fromOffset(0, 87), Color3.fromRGB(0, 180, 255))
+local SaveZ = zoneBtn("SAVE AREA", UDim2.fromOffset(0, 128), Color3.fromRGB(0, 230, 118))
+local ClearBoxBtn = zoneBtn("CLEAR BOX", UDim2.fromOffset(0, 169), Colors.Accent)
+local InstantSaveBtn = zoneBtn("INSTANT SAVE ALL", UDim2.fromOffset(0, 210), Color3.fromRGB(255, 165, 0))
+local DumpLinksBtn = zoneBtn("DUMP LINKS", UDim2.fromOffset(0, 251), Color3.fromRGB(120, 120, 140))
+DumpLinksBtn.MouseButton1Click:Connect(dumpLinks)
+
+ClearBoxBtn.MouseButton1Click:Connect(function() SelectionPart.Parent = nil; SelectionOutline.Adornee = nil; cleanupHandles(); Status.Text = translate("Status: Idle"); showNotification("Zone cleared", 1.5, Colors.Accent) end)
+SpawnZ.MouseButton1Click:Connect(function() SelectionPart.Parent = workspace; SelectionPart.CFrame = lp.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -10); SelectionOutline.Adornee = SelectionPart; showNotification("Spawn zone created", 1.5, Colors.Success) end)
+MoveZ.MouseButton1Click:Connect(function() SelectionPart.CFrame = lp.Character.HumanoidRootPart.CFrame; showNotification("Zone teleported", 1, Colors.Success) end)
+ResizeZ.MouseButton1Click:Connect(function() activateZoneScale(); Status.Text = translate("Resize Active") end)
+
+local function extractLightData(p)
+    local lightObj = p:FindFirstChildWhichIsA("PointLight") or p:FindFirstChildWhichIsA("SurfaceLight") or p:FindFirstChildWhichIsA("SpotLight")
+    if lightObj and settings.saveInvLights then
+        return { R = math.floor(lightObj.Color.R * 255), G = math.floor(lightObj.Color.G * 255), B = math.floor(lightObj.Color.B * 255), Brightness = lightObj.Brightness, Range = lightObj.Range or 13 }
+    end
+    return nil
+end
+
+local function serializePart(p, format, pType, lightData, withLightField)
+    local entry
+    if format == "NEW" then
+        entry = { pt = pType, p = {p.Position.X, p.Position.Y, p.Position.Z}, r = {p.Orientation.X, p.Orientation.Y, p.Orientation.Z}, s = {p.Size.X, p.Size.Y, p.Size.Z}, c = {p.Color.r, p.Color.g, p.Color.b}, m = p.Material.Name }
+        if withLightField then entry.light = lightData end
+    else
+        local sName = "Block"; pcall(function() if p:IsA("Part") then sName = p.Shape.Name end end)
+        entry = { n = p.Name, shape = sName, p = {p.Position.X, p.Position.Y, p.Position.Z}, r = {p.Orientation.X, p.Orientation.Y, p.Orientation.Z}, s = {p.Size.X, p.Size.Y, p.Size.Z}, c = {p.Color.r, p.Color.g, p.Color.b}, t = p.Transparency, m = p.Material.Name }
+        if withLightField then entry.light = lightData end
+    end
+    return entry
+end
+
+local function makeLightBlockEntry(p, lightData, format)
+    if format == "NEW" then
+        return { pt = "InvisibleLight", p = {p.Position.X, p.Position.Y, p.Position.Z}, r = {p.Orientation.X, p.Orientation.Y, p.Orientation.Z}, s = {p.Size.X, p.Size.Y, p.Size.Z}, c = {1,1,1}, m = "SmoothPlastic", light = lightData }
+    else
+        return { n = p.Name .. "_light", shape = "Block", p = {p.Position.X, p.Position.Y, p.Position.Z}, r = {p.Orientation.X, p.Orientation.Y, p.Orientation.Z}, s = {p.Size.X, p.Size.Y, p.Size.Z}, c = {1,1,1}, t = 1, m = "SmoothPlastic", light = lightData }
+    end
+end
+
+local function saveFile(saveName, data, successMsg)
+    local json = Services.Http:JSONEncode(data)
+    local filePath = folderPath .. saveName .. ".json"
+    local saved = false
+    for attempt = 1, 3 do
+        local success, err = pcall(function() writefile(filePath, json) end)
+        if success then saved = true; break
+        else warn("Error saving (attempt "..attempt.."): "..tostring(err)); task.wait(0.5) end
+    end
+    if saved then
+        Status.Text = translate("Saved: ") .. #data .. " " .. translate("parts (size: ") .. string.format("%.1f", #json/1024) .. " " .. translate("KB)")
+        showNotification(successMsg or ("Map saved: " .. saveName), 2, Colors.Success)
+    else
+        Status.Text = translate("Error saving file. Try again."); showNotification("Error saving", 2, Colors.Accent)
+    end
+end
+
+SaveZ.MouseButton1Click:Connect(function()
+    if not SelectionPart.Parent then Status.Text = translate("Spawn zone first!"); showNotification(translate("Spawn zone first!"), 2, Colors.Accent); return end
+    openFileManager("SAVE", "NewMap", function(saveName, format)
+        local data = {}; local cf, sz = SelectionPart.CFrame, SelectionPart.Size
+        local root = workspace:FindFirstChild("LoadedMap") or workspace:FindFirstChild("BuildModel") or workspace
+        if not root then Status.Text = "No BuildModel/LoadedMap found"; return end
+        for _, obj in ipairs(root:GetChildren()) do
+            for _, p in ipairs(obj:GetDescendants()) do
+                if p:IsA("BasePart") and not p:IsDescendantOf(lp.Character) and p ~= SelectionPart and not (settings.saveLinks and gateOf(p)) then
+                    local lpPos = cf:PointToObjectSpace(p.Position)
+                    if math.abs(lpPos.X) <= sz.X/2 and math.abs(lpPos.Y) <= sz.Y/2 and math.abs(lpPos.Z) <= sz.Z/2 then
+                        local lightData = extractLightData(p); local pType = getPiggyBlockType(p)
+                        if pType ~= "Invisible" and pType ~= "InvisibleLight" and lightData then
+                            table.insert(data, serializePart(p, format, pType, lightData, false)); table.insert(data, makeLightBlockEntry(p, lightData, format))
+                        else
+                            table.insert(data, serializePart(p, format, pType, lightData, true))
+                        end
+                    end
+                end
+            end
+        end
+        local gn, ge = 0, 0
+        if settings.saveLinks then
+            gn, ge = appendGates(data, format, function(pos)
+                local r = cf:PointToObjectSpace(pos)
+                return math.abs(r.X) <= sz.X/2 and math.abs(r.Y) <= sz.Y/2 and math.abs(r.Z) <= sz.Z/2
+            end)
+        end
+        saveFile(saveName, data, "Map saved: " .. saveName .. " (gates " .. gn .. ", links " .. ge .. ")")
+    end)
+end)
+
+InstantSaveBtn.MouseButton1Click:Connect(function()
+    openFileManager("SAVE", "AllBlocks_Instant", function(saveName, format)
+        local data = {}; local allParts = {}
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and not v:IsDescendantOf(lp.Character) and v ~= SelectionPart and not v:IsDescendantOf(PreviewFolder) and not (settings.saveLinks and gateOf(v)) then
+                table.insert(allParts, v)
+            end
+        end
+        -- (Se eliminaron las comprobaciones de savePlayers y saveNPCs aquí)
+        for _, p in ipairs(allParts) do
+            local lightData = extractLightData(p); local pType = getPiggyBlockType(p)
+            if pType ~= "Invisible" and pType ~= "InvisibleLight" and lightData then
+                table.insert(data, serializePart(p, format, pType, lightData, false)); table.insert(data, makeLightBlockEntry(p, lightData, format))
+            else
+                table.insert(data, serializePart(p, format, pType, lightData, true))
+            end
+        end
+        local gn, ge = 0, 0
+        if settings.saveLinks then gn, ge = appendGates(data, format, nil) end
+        saveFile(saveName, data, translate("Instant Save Complete") .. " (" .. saveName .. ", gates " .. gn .. ", links " .. ge .. ")")
+    end)
+end)
+
+local PanelCredits, CreditContent = createPanel("CREDITS AND LINKS", UDim2.fromOffset(250, 220), UDim2.new(0.5, 70, 0.5, 60))
+PanelCredits.Parent = ScreenGui
+local function addCreditLabel(text, y, color)
+    local lbl = Instance.new("TextLabel", CreditContent)
+    lbl.Size = UDim2.new(1, 0, 0, 30); lbl.Position = UDim2.fromOffset(0, y); lbl.Text = text; lbl.TextColor3 = color or Color3.new(1,1,1); lbl.BackgroundTransparency = 1; lbl.Font = Enum.Font.Gotham; lbl.TextSize = 11; lbl.TextWrapped = true
+end
+addCreditLabel("Discord: https://discord.gg/JFSj6zwTc", 0, Color3.fromRGB(0, 255, 150))
+addCreditLabel("Tutorial: https://youtu.be/yFnSC4etyFI", 35, Color3.fromRGB(255, 50, 50))
+addCreditLabel("Inspired by:\nModel manager by darki\nSteal maps from venoHub", 70, Color3.fromRGB(180,180,180))
+
+local ToggleFrame = Instance.new("Frame"); ToggleFrame.Name = "ToggleFrame"; ToggleFrame.Size = UDim2.new(0, 60, 0, 60); ToggleFrame.Position = UDim2.new(0, 10, 0.5, -30); ToggleFrame.BackgroundColor3 = Colors.Panel; ToggleFrame.BackgroundTransparency = 0.2; ToggleFrame.Active = true; ToggleFrame.Draggable = true; ToggleFrame.ZIndex = 200; ToggleFrame.Parent = ScreenGui
+Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 12)
+local ToggleBtn = Instance.new("TextButton", ToggleFrame); ToggleBtn.Size = UDim2.new(1, 0, 1, 0); ToggleBtn.BackgroundColor3 = Colors.Dark; ToggleBtn.Text = translate("hide"); ToggleBtn:SetAttribute("TranslationKey", "hide"); ToggleBtn.TextColor3 = Color3.new(1,1,1); ToggleBtn.Font = Enum.Font.GothamBold; ToggleBtn.TextSize = 14; ToggleBtn.ZIndex = 201
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 12)
+
+local menusVisible = true
+local allMenus = {PanelBuild, PanelZone, PanelExplorer, PanelCredits, PanelSettings}
+local visibilitySnapshot = {}
+local function toggleMenus()
+    if menusVisible then
+        visibilitySnapshot = {}; for i, menu in ipairs(allMenus) do if menu then visibilitySnapshot[i] = menu.Visible; menu.Visible = false end end; menusVisible = false; ToggleBtn.Text = translate("show")
+    else
+        for i, menu in ipairs(allMenus) do if menu then menu.Visible = visibilitySnapshot[i] or false end end; menusVisible = true; ToggleBtn.Text = translate("hide")
+    end
+end
+ToggleBtn.MouseButton1Click:Connect(toggleMenus)
+
+function updateUITexts()
+    for _, obj in ipairs(ScreenGui:GetDescendants()) do if (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) and obj:GetAttribute("TranslationKey") then obj.Text = translate(obj:GetAttribute("TranslationKey")) end end
+    for _, t in ipairs(toggleButtons) do t.btn.Text = settings[t.key] and translate("ON") or translate("OFF") end
+    ToggleBtn.Text = translate(menusVisible and "hide" or "show")
+end
+updateUITexts()
+
+local function updateBlockCountLabel(fileName)
+    if fileName and fileName ~= "" then
+        local file = folderPath .. fileName .. ".json"
+        if isfile(file) then
+            local success, data = pcall(function() return Services.Http:JSONDecode(readfile(file)) end)
+            if success and data then local blocks = data.blocks or data; MapBlockCountLabel.Text = translate("Blocks in file:") .. " " .. tostring(#blocks); return end
+        end
+    end
+    MapBlockCountLabel.Text = ""
+end
+
+MapInputBtn.MouseButton1Click:Connect(function() openFileManager("LOAD", MapInputBtn.Text, function(selectedName) MapInputBtn.Text = selectedName; updateBlockCountLabel(selectedName) end) end)
+ExpNameInput:GetPropertyChangedSignal("Text"):Connect(function() if not PanelExplorer.Visible then return end; updateBlockCountLabel(ExpNameInput.Text) end)
+
+PreviewBtn.MouseButton1Click:Connect(function()
+    local file = folderPath .. MapInputBtn.Text .. ".json"
+    if not isfile(file) then Status.Text = translate("File not found"); showNotification("File not found", 2, Colors.Accent); return end
+    PreviewFolder:ClearAllChildren(); cleanupHandles()
+    local rawData = Services.Http:JSONDecode(readfile(file)); local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    local blocksData = rawData.blocks or rawData
+    if #blocksData == 0 then showNotification("No blocks in file", 2, Colors.Accent); return end
+    currentPreviewModel = Instance.new("Model", PreviewFolder); currentPreviewModel.Name = "Preview_Group"
+    local firstPos = Vector3.new(blocksData[1].p[1], blocksData[1].p[2], blocksData[1].p[3]); local lastOffset = hrp.Position - firstPos
+    for i, d in ipairs(blocksData) do
+        if d.pt == "InvisibleLight" and not settings.loadInvLights then continue end
+        if d.pt == "Link" and not settings.loadLinks then continue end
+        local p = Instance.new("Part"); p.Name = tostring(i); local pType = d.pt or "Normal"; local shape = "Block"
+        if d.shape then shape = d.shape end
+        if pType == "Cylinder" then shape = "Cylinder" elseif pType == "Sphere" then shape = "Ball" elseif pType == "Wedge" then shape = "Wedge" elseif pType == "Link" then shape = "Block" end
+        pcall(function() p.Shape = shape end)
+        p.Size = Vector3.new(unpack(d.s)); p.Position = Vector3.new(unpack(d.p)) + lastOffset; p.Orientation = Vector3.new(unpack(d.r))
+        if pType == "Link" and d.gcf then p.CFrame = CFrame.new(unpack(d.gcf)) + lastOffset end
+        if d.c then p.Color = getBestBrickColor(Color3.new(unpack(d.c))).Color else p.Color = Color3.fromRGB(200, 200, 255) end
+        local matName = d.m or "SmoothPlastic"
+        p.Material = Enum.Material[matName] or Enum.Material.SmoothPlastic
+        p.TopSurface = Enum.SurfaceType.Smooth
+        p.BottomSurface = Enum.SurfaceType.Smooth
+        p.Transparency = settings.previewTransparency; p.CanCollide = false; p.Anchored = true; p.CastShadow = false; p.Parent = currentPreviewModel
+    end
+    updateBoundingPart(); Status.Text = translate("Preview Loaded"); showNotification("Preview loaded: " .. #blocksData .. " blocks", 2, Colors.Success)
+end)
+
+MoveBtn.MouseButton1Click:Connect(function()
+    if not currentPreviewModel then showNotification("No preview loaded", 2, Colors.Accent); return end
+    cleanupHandles(); updateBoundingPart()
+    posHandle = Instance.new("Handles"); posHandle.Parent = ScreenGui; posHandle.Adornee = boundingPart; posHandle.Style = Enum.HandlesStyle.Movement; posHandle.Color3 = Colors.Primary
+    local acc = 0
+    posHandle.MouseButton1Down:Connect(function() lockCamera() end)
+    posHandle.MouseDrag:Connect(function(face, distance)
+        local snap = tonumber(GridSnapBox.Text) or 1; local d = math.floor(distance / snap + 0.5) * snap
+        if d ~= acc then local delta = Vector3.FromNormalId(face) * (d - acc); local newCF = currentPreviewModel:GetPivot() * CFrame.new(delta); currentPreviewModel:PivotTo(newCF); boundingPart.CFrame = newCF; acc = d end
+    end)
+    posHandle.MouseButton1Up:Connect(function() acc = 0; unlockCamera() end)
+    showNotification("Move mode activated", 1.5, Colors.Primary)
+end)
+
+RotateBtn.MouseButton1Click:Connect(function()
+    if not currentPreviewModel then showNotification("No preview loaded", 2, Colors.Accent); return end
+    cleanupHandles(); updateBoundingPart()
+    arcHandle = Instance.new("ArcHandles"); arcHandle.Parent = ScreenGui; arcHandle.Adornee = boundingPart; arcHandle.Color3 = Colors.Primary
+    local acc = 0
+    arcHandle.MouseButton1Down:Connect(function() lockCamera() end)
+    arcHandle.MouseDrag:Connect(function(axis, relative)
+        local angleDeg = tonumber(AngleSnapBox.Text) or 15; local snap = math.rad(angleDeg); local r = math.floor(relative / snap + 0.5) * snap
+        if r ~= acc then local rotCF = CFrame.fromAxisAngle(Vector3.FromAxis(axis), r - acc); currentPreviewModel:PivotTo(currentPreviewModel:GetPivot() * rotCF); boundingPart.CFrame = currentPreviewModel:GetPivot(); acc = r end
+    end)
+    arcHandle.MouseButton1Up:Connect(function() acc = 0; unlockCamera() end)
+    showNotification("Rotate mode activated", 1.5, Colors.Primary)
+end)
+
+ClearPrevBtn.MouseButton1Click:Connect(function() PreviewFolder:ClearAllChildren(); currentPreviewModel = nil; cleanupHandles(); Status.Text = translate("Status: Idle"); showNotification("Preview cleared", 1.5, Colors.Accent) end)
+
+local UPDATE_INTERVAL = 10
+UploadBtn.MouseButton1Click:Connect(function()
+    if not currentPreviewModel or #currentPreviewModel:GetChildren() == 0 then Status.Text = translate("Error: No preview active"); showNotification("No preview active", 2, Colors.Accent); return end
+    uploadCancelFlag = false; loadAssets()
+    local remotes = getRemotes(); local pb, cr, cm, ubs, ul = remotes.PlaceBlock, remotes.CommitResize, remotes.CommitMove, remotes.UpdateBlockSettings, remotes.UpdateBlockLink
+    if not pb or not cr or not cm then Status.Text = translate("Error: Remotes not found"); showNotification("Remotes not found", 2, Colors.Accent); return end
+    local file = folderPath .. MapInputBtn.Text .. ".json"
+    if not isfile(file) then Status.Text = translate("File not found"); showNotification("File not found", 2, Colors.Accent); return end
+
+    local rawData = Services.Http:JSONDecode(readfile(file)); cleanupHandles(); ProgressFrame.Visible = true; Fill.Size = UDim2.new(0, 0, 0, 12)
+    local blocksData = rawData.blocks or rawData; local total = #blocksData
+    if total == 0 then ProgressFrame.Visible = false; Status.Text = translate("No data to upload"); return end
+
+    local startTime = tick(); local processed, failedCount, skippedCount = 0, 0, 0
+    local searchTimeout = settings.searchTimeout or 20
+    local currentDelay = settings.buildDelay or 0.05
+    local minDelay = 0.03
+    local maxDelay = 0.5
+    local blocksThisSecond = 0
+    local lastSecondCheck = tick()
+    local placedLinks, wiredCount, cfgFails, posBad, wireBad = {}, 0, 0, 0, 0
+    local gcl = remotes.GetChildLinks
+
+    local function findPlacedBlock(spawnPos, maxAttempts)
+        local attempts = 0
+        while attempts < maxAttempts and not uploadCancelFlag do
+            attempts = attempts + 1; local bm = workspace:FindFirstChild("BuildModel") or workspace:FindFirstChild("LoadedMap")
+            if bm then for _, v in ipairs(bm:GetChildren()) do if (v:GetPivot().Position - spawnPos).Magnitude < 5 then return v end end end
+            task.wait(0.5)
+        end
+        return nil
+    end
+
+    local function finishStep(reqStart)
+        processed = processed + 1
+        local processTime = tick() - reqStart
+        blocksThisSecond = blocksThisSecond + 1
+
+        if processTime > (currentDelay * 1.5) then
+            currentDelay = math.min(currentDelay + 0.01, maxDelay)
+        elseif processTime < (currentDelay * 0.8) then
+            currentDelay = math.max(currentDelay - 0.005, minDelay)
+        end
+
+        local now = tick()
+        if now - lastSecondCheck >= 1.0 then
+            if blocksThisSecond > 25 then
+                currentDelay = math.min(currentDelay + 0.05, maxDelay)
+            end
+            blocksThisSecond = 0
+            lastSecondCheck = now
+        end
+
+        if processed % UPDATE_INTERVAL == 0 or processed == total then
+            if uploadCancelFlag then Status.Text = translate("Upload Cancelled by user"); ProgressFrame.Visible = false; return true end
+            local percent = processed / total
+            local elapsed = tick() - startTime
+            local remaining = (processed < total) and ((elapsed / processed) * (total - processed)) or 0
+            local bps = math.floor(1 / math.max(currentDelay, 0.001))
+
+            Fill.Size = UDim2.new(percent, 0, 0, 12)
+            ProgressText.Text = string.format("%s %d%% | BPS: %d | Est: %s | fails:%d", translate("Blocks:"), math.floor(percent*100), bps, formatTime(remaining), failedCount)
+            Status.Text = translate("Blocks: ") .. processed .. "/" .. total .. translate(" (fails: ") .. failedCount .. ")"
+            task.wait()
+        end
+
+        task.wait(currentDelay)
+        return false
+    end
+
+    task.spawn(function()
+        for i = 1, total do
+            if uploadCancelFlag then Status.Text = translate("Upload Cancelled by user"); ProgressFrame.Visible = false; return end
+            local d = blocksData[i]
+            if not d then processed = processed + 1; failedCount = failedCount + 1; continue end
+
+            if d.pt == "Link" then
+                if not settings.loadLinks then skippedCount = skippedCount + 1; processed = processed + 1; continue end
+                local prevL = currentPreviewModel:FindFirstChild(tostring(i))
+                if not prevL then processed = processed + 1; failedCount = failedCount + 1; continue end
+                local reqL = tick()
+                local inst = placeLink(pb, d, prevL.CFrame)
+                if inst then
+                    placedLinks[d.gid] = inst
+                    if (gateCF(inst).Position - prevL.Position).Magnitude > 0.2 then posBad = posBad + 1 end
+                    if settings.applyLinkCfg and ubs and d.gcfg and next(d.gcfg) then
+                        cfgFails = cfgFails + applyLinkCfg(ubs, inst, d.gcfg)
+                    end
+                    prevL:Destroy()
+                else
+                    failedCount = failedCount + 1
+                end
+                if finishStep(reqL) then return end
+                continue
+            end
+
+            if settings.dontBuildInvBlocks and d.pt == "Invisible" then skippedCount = skippedCount + 1; processed = processed + 1; continue end
+            if not settings.loadInvLights and d.pt == "InvisibleLight" then skippedCount = skippedCount + 1; processed = processed + 1; continue end
+
+            local s, c, mat, light, bType = d.s or {1,1,1}, d.c or {1,1,1}, d.m or "SmoothPlastic", d.light, d.pt or "Normal"
+            local template = Sustitutos["Standard"]
+            if bType == "NoClip" then template = Sustitutos["NoclipBasic"] or Sustitutos["NoClipEvent"] or template
+            elseif bType == "Cylinder" then template = Sustitutos["Cylinder"] or template
+            elseif bType == "Transparent" then template = Sustitutos["Transparent"] or template
+            elseif bType == "Invisible" or bType == "InvisibleLight" then template = (bType == "InvisibleLight" and Sustitutos["InvisibleLight"]) or Sustitutos["Invisible"] or template
+            elseif bType == "Sphere" then template = Sustitutos["Sphere"] or template
+            elseif bType == "Wedge" then template = Sustitutos["Wedge"] or template end
+
+            if not template then template = Sustitutos["Standard"]; if not template then processed = processed + 1; failedCount = failedCount + 1; continue end end
+            local prevPart = currentPreviewModel:FindFirstChild(tostring(i))
+            if not prevPart then processed = processed + 1; failedCount = failedCount + 1; continue end
+
+            local tPosCF = prevPart.CFrame; local finalPos = tPosCF.Position
+            local spawnPos = Vector3.new(finalPos.X, 4000, finalPos.Z); local finalSize = Vector3.new(unpack(s))
+            local color = Color3.new(unpack(c)); local material = Enum.Material[mat] or Enum.Material.SmoothPlastic; local brickColor = getBestBrickColor(color)
+
+            -- SE ELIMINÓ LA LÓGICA DE skipDuplicates AQUÍ
+
+            local placed = false
+            local reqStart = tick()
+            for attempt = 1, 3 do
+                if uploadCancelFlag then break end
+                local success = pcall(function() pb:InvokeServer(template, CFrame.new(spawnPos), brickColor, material) end)
+                if success then placed = true; break else task.wait(0.5) end
+            end
+
+            if not placed then processed = processed + 1; failedCount = failedCount + 1; continue end
+            local currentBlock = findPlacedBlock(spawnPos, math.floor(searchTimeout / 0.5))
+
+            if currentBlock then
+                if bType == "Invisible" or bType == "InvisibleLight" then
+                    pcall(function() cm:InvokeServer(currentBlock, tPosCF) end)
+                    for _, part in ipairs(currentBlock:GetDescendants()) do
+                        if part:IsA("BasePart") then local partCF = part.CFrame; pcall(function() cr:InvokeServer(currentBlock, {part, partCF, finalSize}) end) end
+                    end
+                    if bType == "InvisibleLight" and ubs and light then
+                        pcall(function() ubs:InvokeServer(currentBlock, {["R"] = light.R or 255,["G"] = light.G or 255,["B"] = light.B or 255,["Brightness"] = light.Brightness or 2,["Range"] = light.Range or 13}) end)
+                    end
+                else
+                    local cp = currentBlock:FindFirstChild("ColorPart") or currentBlock:FindFirstChildOfClass("BasePart")
+                    if cp then pcall(function() cr:InvokeServer(currentBlock, {cp, tPosCF, finalSize}) end) end
+                end
+                prevPart:Destroy()
+            else
+                failedCount = failedCount + 1
+            end
+
+            if finishStep(reqStart) then return end
+        end
+
+        if next(placedLinks) and not uploadCancelFlag then
+            if not ul then
+                warn("UpdateBlockLink remote not found: links not wired")
+            else
+                ProgressText.Text = "Linking..."
+                for _, d in ipairs(blocksData) do
+                    if uploadCancelFlag then break end
+                    if d.pt == "Link" and d.gto and #d.gto > 0 and placedLinks[d.gid] then
+                        local list = {}
+                        for _, tid in ipairs(d.gto) do if placedLinks[tid] then list[#list + 1] = placedLinks[tid] end end
+                        if #list > 0 then
+                            local okL = pcall(function() ul:InvokeServer(placedLinks[d.gid], list) end)
+                            if okL then wiredCount = wiredCount + #list else failedCount = failedCount + 1 end
+                            task.wait(currentDelay)
+                            if okL and gcl then
+                                local okV, res = pcall(function() return gcl:InvokeServer(placedLinks[d.gid]) end)
+                                local cnt = 0
+                                if okV and type(res) == "table" then for _ in pairs(res) do cnt = cnt + 1 end end
+                                if cnt ~= #list then wireBad = wireBad + 1 end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        if uploadCancelFlag then Status.Text = translate("Upload Cancelled by user"); ProgressFrame.Visible = false; return end
+        Status.Text = translate("Upload Finished") .. " (" .. total .. ", fails: " .. failedCount .. ", skipped: " .. skippedCount .. ", links: " .. wiredCount .. ")"
+            .. ((cfgFails + posBad + wireBad) > 0 and (" | cfgFail:" .. cfgFails .. " posOff:" .. posBad .. " wireOff:" .. wireBad) or "")
+        showNotification("Upload finished! " .. total .. " blocks, " .. wiredCount .. " links", 3, Colors.Success)
+        if settings.autoClearPreview then PreviewFolder:ClearAllChildren(); currentPreviewModel = nil; cleanupHandles() end
+        task.wait(1); ProgressFrame.Visible = false
+    end)
+end) local UPDATE_INTERVAL = 10
+UploadBtn.MouseButton1Click:Connect(function()
+    if not currentPreviewModel or #currentPreviewModel:GetChildren() == 0 then Status.Text = translate("Error: No preview active"); showNotification("No preview active", 2, Colors.Accent); return end
+    uploadCancelFlag = false; loadAssets()
+    local remotes = getRemotes(); local pb, cr, cm, ubs, ul = remotes.PlaceBlock, remotes.CommitResize, remotes.CommitMove, remotes.UpdateBlockSettings, remotes.UpdateBlockLink
+    if not pb or not cr or not cm then Status.Text = translate("Error: Remotes not found"); showNotification("Remotes not found", 2, Colors.Accent); return end
+    local file = folderPath .. MapInputBtn.Text .. ".json"
+    if not isfile(file) then Status.Text = translate("File not found"); showNotification("File not found", 2, Colors.Accent); return end
+
+    local rawData = Services.Http:JSONDecode(readfile(file)); cleanupHandles(); ProgressFrame.Visible = true; Fill.Size = UDim2.new(0, 0, 0, 12)
+    local blocksData = rawData.blocks or rawData; local total = #blocksData
+    if total == 0 then ProgressFrame.Visible = false; Status.Text = translate("No data to upload"); return end
+
+    local startTime = tick(); local processed, failedCount, skippedCount = 0, 0, 0
+    local searchTimeout = settings.searchTimeout or 20
+    local currentDelay = 0.05
+    local placedLinks, wiredCount, cfgFails, posBad, wireBad = {}, 0, 0, 0, 0
+    local gcl = remotes.GetChildLinks
+
+    -- OPTIMIZACIÓN 1: Buscar cerca de la posición REAL (targetPos), no de 4000 studs
+    local function findPlacedBlock(targetPos, maxAttempts)
+        local attempts = 0
+        while attempts < maxAttempts and not uploadCancelFlag do
+            attempts = attempts + 1; 
+            local bm = workspace:FindFirstChild("BuildModel") or workspace:FindFirstChild("LoadedMap")
+            if bm then 
+                for _, v in ipairs(bm:GetChildren()) do 
+                    if (v:GetPivot().Position - targetPos).Magnitude < 8 then return v end 
+                end 
+            end
+            task.wait(0.1)
+        end
+        return nil
+    end
+
+    local function finishStep(reqStart)
+        processed = processed + 1
+        local processTime = tick() - reqStart
+
+        -- Ajuste dinámico del delay: si el servidor responde rápido, vamos más rápido
+        if processTime > 0.5 then
+            currentDelay = math.min(currentDelay + 0.05, 0.5)
+        elseif processTime < 0.1 then
+            currentDelay = math.max(currentDelay - 0.01, 0.02)
+        end
+
+        if processed % UPDATE_INTERVAL == 0 or processed == total then
+            if uploadCancelFlag then Status.Text = translate("Upload Cancelled by user"); ProgressFrame.Visible = false; return true end
+            local percent = processed / total
+            local elapsed = tick() - startTime
+            local remaining = (processed < total) and ((elapsed / processed) * (total - processed)) or 0
+            local bps = math.floor(1 / math.max(currentDelay, 0.001))
+
+            Fill.Size = UDim2.new(percent, 0, 0, 12)
+            ProgressText.Text = string.format("%s %d%% | BPS: %d | Est: %s | fails:%d", translate("Blocks:"), math.floor(percent*100), bps, formatTime(remaining), failedCount)
+            Status.Text = translate("Blocks: ") .. processed .. "/" .. total .. translate(" (fails: ") .. failedCount .. ")"
+            task.wait()
+        end
+
+        task.wait(currentDelay)
+        return false
+    end
+
+    task.spawn(function()
+        for i = 1, total do
+            if uploadCancelFlag then Status.Text = translate("Upload Cancelled by user"); ProgressFrame.Visible = false; return end
+            local d = blocksData[i]
+            if not d then processed = processed + 1; failedCount = failedCount + 1; continue end
+
+            if d.pt == "Link" then
+                if not settings.loadLinks then skippedCount = skippedCount + 1; processed = processed + 1; continue end
+                local prevL = currentPreviewModel:FindFirstChild(tostring(i))
+                if not prevL then processed = processed + 1; failedCount = failedCount + 1; continue end
+                local reqL = tick()
+                local inst = placeLink(pb, d, prevL.CFrame)
+                if inst then
+                    placedLinks[d.gid] = inst
+                    if (gateCF(inst).Position - prevL.Position).Magnitude > 0.2 then posBad = posBad + 1 end
+                    if settings.applyLinkCfg and ubs and d.gcfg and next(d.gcfg) then
+                        cfgFails = cfgFails + applyLinkCfg(ubs, inst, d.gcfg)
+                    end
+                    prevL:Destroy()
+                else
+                    failedCount = failedCount + 1
+                end
+                if finishStep(reqL) then return end
+                continue
+            end
+
+            if settings.dontBuildInvBlocks and d.pt == "Invisible" then skippedCount = skippedCount + 1; processed = processed + 1; continue end
+            if not settings.loadInvLights and d.pt == "InvisibleLight" then skippedCount = skippedCount + 1; processed = processed + 1; continue end
+
+            local s, c, mat, light, bType = d.s or {1,1,1}, d.c or {1,1,1}, d.m or "SmoothPlastic", d.light, d.pt or "Normal"
+            local template = Sustitutos["Standard"]
+            if bType == "NoClip" then template = Sustitutos["NoclipBasic"] or Sustitutos["NoClipEvent"] or template
+            elseif bType == "Cylinder" then template = Sustitutos["Cylinder"] or template
+            elseif bType == "Transparent" then template = Sustitutos["Transparent"] or template
+            elseif bType == "Invisible" or bType == "InvisibleLight" then template = (bType == "InvisibleLight" and Sustitutos["InvisibleLight"]) or Sustitutos["Invisible"] or template
+            elseif bType == "Sphere" then template = Sustitutos["Sphere"] or template
+            elseif bType == "Wedge" then template = Sustitutos["Wedge"] or template end
+
+            if not template then template = Sustitutos["Standard"]; if not template then processed = processed + 1; failedCount = failedCount + 1; continue end end
+            local prevPart = currentPreviewModel:FindFirstChild(tostring(i))
+            if not prevPart then processed = processed + 1; failedCount = failedCount + 1; continue end
+
+            local tPosCF = prevPart.CFrame; local finalPos = tPosCF.Position
+            local spawnPos = Vector3.new(finalPos.X, 4000, finalPos.Z); local finalSize = Vector3.new(unpack(s))
+            local color = Color3.new(unpack(c)); local material = Enum.Material[mat] or Enum.Material.SmoothPlastic; local brickColor = getBestBrickColor(color)
+
+            local placed = false
+            local reqStart = tick()
+            local currentBlock = nil
+
+            -- OPTIMIZACIÓN 2: Usar la instancia devuelta por el servidor si es posible
+            for attempt = 1, 3 do
+                if uploadCancelFlag then break end
+                local success, ret = pcall(function() return pb:InvokeServer(template, CFrame.new(spawnPos), brickColor, material) end)
+                if success and typeof(ret) == "Instance" and ret.Parent then 
+                    currentBlock = ret
+                    placed = true
+                    break 
+                elseif success then
+                    placed = true
+                    break
+                else
+                    task.wait(0.5) 
+                end
+            end
+
+            if not placed then processed = processed + 1; failedCount = failedCount + 1; continue end
+            
+            -- Si el servidor no devolvió la instancia, la buscamos en la posición REAL, no en Y=4000
+            if not currentBlock then
+                currentBlock = findPlacedBlock(finalPos, math.floor(searchTimeout / 0.1))
+            end
+
+            if currentBlock then
+                if bType == "Invisible" or bType == "InvisibleLight" then
+                    pcall(function() cm:InvokeServer(currentBlock, tPosCF) end)
+                    for _, part in ipairs(currentBlock:GetDescendants()) do
+                        if part:IsA("BasePart") then local partCF = part.CFrame; pcall(function() cr:InvokeServer(currentBlock, {part, partCF, finalSize}) end) end
+                    end
+                    if bType == "InvisibleLight" and ubs and light then
+                        pcall(function() ubs:InvokeServer(currentBlock, {["R"] = light.R or 255,["G"] = light.G or 255,["B"] = light.B or 255,["Brightness"] = light.Brightness or 2,["Range"] = light.Range or 13}) end)
+                    end
+                else
+                    -- OPTIMIZACIÓN 3: Arreglo para PoweredBlock y similares
+                    local cp = currentBlock:FindFirstChild("MouseFilterPart") or currentBlock:FindFirstChild("ColorPart") or currentBlock:FindFirstChildOfClass("BasePart")
+                    if cp then pcall(function() cr:InvokeServer(currentBlock, {cp, tPosCF, finalSize}) end) end
+                end
+                prevPart:Destroy()
+            else
+                failedCount = failedCount + 1
+            end
+
+            if finishStep(reqStart) then return end
+        end
+
+        if next(placedLinks) and not uploadCancelFlag then
+            if not ul then
+                warn("UpdateBlockLink remote not found: links not wired")
+            else
+                ProgressText.Text = "Linking..."
+                for _, d in ipairs(blocksData) do
+                    if uploadCancelFlag then break end
+                    if d.pt == "Link" and d.gto and #d.gto > 0 and placedLinks[d.gid] then
+                        local list = {}
+                        for _, tid in ipairs(d.gto) do if placedLinks[tid] then list[#list + 1] = placedLinks[tid] end end
+                        if #list > 0 then
+                            local okL = pcall(function() ul:InvokeServer(placedLinks[d.gid], list) end)
+                            if okL then wiredCount = wiredCount + #list else failedCount = failedCount + 1 end
+                            task.wait(0.1)
+                            if okL and gcl then
+                                local okV, res = pcall(function() return gcl:InvokeServer(placedLinks[d.gid]) end)
+                                local cnt = 0
+                                if okV and type(res) == "table" then for _ in pairs(res) do cnt = cnt + 1 end end
+                                if cnt ~= #list then wireBad = wireBad + 1 end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        if uploadCancelFlag then Status.Text = translate("Upload Cancelled by user"); ProgressFrame.Visible = false; return end
+        Status.Text = translate("Upload Finished") .. " (" .. total .. ", fails: " .. failedCount .. ", skipped: " .. skippedCount .. ", links: " .. wiredCount .. ")"
+            .. ((cfgFails + posBad + wireBad) > 0 and (" | cfgFail:" .. cfgFails .. " posOff:" .. posBad .. " wireOff:" .. wireBad) or "")
+        showNotification("Upload finished! " .. total .. " blocks, " .. wiredCount .. " links", 3, Colors.Success)
+        if settings.autoClearPreview then PreviewFolder:ClearAllChildren(); currentPreviewModel = nil; cleanupHandles() end
+        task.wait(1); ProgressFrame.Visible = false
+    end)
+end)
