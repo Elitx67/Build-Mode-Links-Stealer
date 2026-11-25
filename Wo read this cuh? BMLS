@@ -489,7 +489,7 @@ local settings = {
     autoClearPreview = false, showWarnings = true, searchTimeout = 20,
     previewTransparency = 0.5, saveInvLights = true, loadInvLights = true,
     saveLinks = true, loadLinks = true, applyLinkCfg = true,
-    includeConnectedLinks = false, verifyLinks = false
+    includeConnectedLinks = false, verifyLinks = false, realLinkPreview = true
 }
 
 -- ================= LINKS (compuertas Piggy) =================
@@ -679,6 +679,58 @@ local function partsInfo(g, cf)
     return list
 end
 
+-- Referencia del preview de un link: el cubo usaba su CFrame; el modelo realista usa la parte invisible RMS_Anchor
+local function previewRef(prev)
+    if prev:IsA("Model") then
+        local a = prev:FindFirstChild("RMS_Anchor")
+        return a and a.CFrame or prev:GetPivot()
+    end
+    return prev.CFrame
+end
+
+-- Preview con la forma real: clon de la plantilla (sin scripts), anclado, sin colision, con las partes redimensionadas aplicadas.
+local function makeLinkPreview(d, i, off)
+    local tpl = findTemplate(d.gt)
+    if not tpl or not d.gcf then return nil end
+    local m = tpl:Clone()
+    m.Name = tostring(i)
+    for _, x in ipairs(m:GetDescendants()) do
+        if x:IsA("LuaSourceContainer") or x:IsA("Sound") or x:IsA("ProximityPrompt") or x:IsA("ClickDetector") or x:IsA("Constraint") then x:Destroy() end
+    end
+    local target = CFrame.new(unpack(d.gcf)) + off
+    local mfp = m:FindFirstChild("MouseFilterPart")
+    local refCF = (mfp and mfp:IsA("BasePart")) and mfp.CFrame or m:GetPivot()
+    local delta = target * refCF:Inverse()
+    local cp = m:FindFirstChild("ColorPart")
+    if cp and cp:IsA("BasePart") then
+        cp.BrickColor = BrickColor.new(d.gbc or "Institutional white")
+        cp.Material = getMaterial(d.gm)
+    end
+    for _, x in ipairs(m:GetDescendants()) do
+        if x:IsA("BasePart") then
+            x.CFrame = delta * x.CFrame
+            x.Anchored = true; x.CanCollide = false; x.CanQuery = false; x.CanTouch = false; x.CastShadow = false
+            x.Transparency = 1 - (1 - x.Transparency) * (1 - settings.previewTransparency)
+        end
+    end
+    local parts = getParts(d)
+    if parts then
+        for _, p in ipairs(parts) do
+            local obj = m:FindFirstChild(p.n)
+            if obj and obj:IsA("BasePart") then
+                obj.Size = Vector3.new(p.s[1], p.s[2], p.s[3])
+                obj.CFrame = target * CFrame.new(unpack(p.rel))
+            end
+        end
+    end
+    local anchor = Instance.new("Part")
+    anchor.Name = "RMS_Anchor"; anchor.Size = Vector3.new(0.2, 0.2, 0.2); anchor.Transparency = 1
+    anchor.Anchored = true; anchor.CanCollide = false; anchor.CanQuery = false; anchor.CanTouch = false; anchor.CastShadow = false
+    anchor.CFrame = parts and (target * CFrame.new(unpack(parts[1].rel))) or target
+    anchor.Parent = m
+    return m
+end
+
 -- appendGates v3: targets en cache (1 llamada remota por compuerta), grafo completo salientes + entrantes
 local function appendGates(data, format, inZone)
     local root = buildRoot()
@@ -809,7 +861,7 @@ local function dumpLinks()
 end
 -- ================= FIN LINKS =================
 
-local PanelSettings, SetContent = createPanel("SETTINGS", UDim2.fromOffset(300, 560), UDim2.new(0.5, -150, 0.5, -280))
+local PanelSettings, SetContent = createPanel("SETTINGS", UDim2.fromOffset(300, 600), UDim2.new(0.5, -150, 0.5, -300))
 PanelSettings.Parent = ScreenGui; PanelSettings.Visible = false
 local toggleButtons = {}
 
@@ -838,7 +890,7 @@ end
 
 local yOff = 5
 -- Se eliminaron Save Players, Save NPCs y Skip Duplicates. Se añadió Include outside links.
-for _, pair in ipairs({ {"disableInvisible","Disable invisible blocks"},{"dontBuildInvBlocks","Dont Build InvBlocks"},{"autoClearPreview","Auto-clear preview"},{"showWarnings","Show warnings"},{"saveInvLights","Save InvLights?"},{"loadInvLights","Load InvLights?"},{"saveLinks","Save Links?"},{"loadLinks","Load Links?"},{"applyLinkCfg","Apply link config?"},{"includeConnectedLinks","Include outside links?"},{"verifyLinks","Verify links (slower)"} }) do
+for _, pair in ipairs({ {"disableInvisible","Disable invisible blocks"},{"dontBuildInvBlocks","Dont Build InvBlocks"},{"autoClearPreview","Auto-clear preview"},{"showWarnings","Show warnings"},{"saveInvLights","Save InvLights?"},{"loadInvLights","Load InvLights?"},{"saveLinks","Save Links?"},{"loadLinks","Load Links?"},{"applyLinkCfg","Apply link config?"},{"includeConnectedLinks","Include outside links?"},{"verifyLinks","Verify links (slower)"},{"realLinkPreview","Realistic link preview"} }) do
     createToggle(SetContent, yOff, pair[1], pair[2]); yOff = yOff + 32
 end
 createSlider(SetContent, yOff, "previewTransparency", "Preview transparency", 0, 1); yOff = yOff + 32
@@ -857,7 +909,7 @@ yOff = yOff + 32
 local resetBtn = Instance.new("TextButton", SetContent); resetBtn.Size = UDim2.new(0.48, 0, 0, 32); resetBtn.Position = UDim2.new(0, 0, 0, yOff); resetBtn.Text = translate("Reset settings"); resetBtn:SetAttribute("TranslationKey", "Reset settings"); resetBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 50); resetBtn.TextColor3 = Color3.new(1,1,1); resetBtn.Font = Enum.Font.GothamBold; resetBtn.TextSize = 12
 Instance.new("UICorner", resetBtn).CornerRadius = UDim.new(0, 6)
 resetBtn.MouseButton1Click:Connect(function()
-    settings.disableInvisible = false; settings.dontBuildInvBlocks = false; settings.autoClearPreview = false; settings.showWarnings = true; settings.searchTimeout = 20; settings.buildDelay = 0.05; settings.previewTransparency = 0.5; settings.saveInvLights = true; settings.loadInvLights = true; settings.saveLinks = true; settings.loadLinks = true; settings.applyLinkCfg = true; settings.verifyLinks = false; settings.includeConnectedLinks = false
+    settings.disableInvisible = false; settings.dontBuildInvBlocks = false; settings.autoClearPreview = false; settings.showWarnings = true; settings.searchTimeout = 20; settings.buildDelay = 0.05; settings.previewTransparency = 0.5; settings.saveInvLights = true; settings.loadInvLights = true; settings.saveLinks = true; settings.loadLinks = true; settings.applyLinkCfg = true; settings.verifyLinks = false; settings.realLinkPreview = true; settings.includeConnectedLinks = false
     for _, t in ipairs(toggleButtons) do t.btn.Text = settings[t.key] and translate("ON") or translate("OFF"); t.btn.BackgroundColor3 = settings[t.key] and Colors.Success or Colors.Accent end
     showNotification(translate("Settings reset"), 2, Colors.Success)
 end)
@@ -1093,9 +1145,14 @@ PreviewBtn.MouseButton1Click:Connect(function()
     currentPreviewModel = Instance.new("Model", PreviewFolder); currentPreviewModel.Name = "Preview_Group"
     local firstPos = Vector3.new(blocksData[1].p[1], blocksData[1].p[2], blocksData[1].p[3]); local lastOffset = hrp.Position - firstPos
     local bad = 0
+    uploading = true -- bloquea Upload/Clear/Preview mientras se arma el preview
     for i, d in ipairs(blocksData) do
         if (d.pt == "InvisibleLight" and not settings.loadInvLights) or (d.pt == "Link" and not settings.loadLinks) then continue end
         local okP, err = pcall(function()
+            if d.pt == "Link" and settings.realLinkPreview and d.gcf then
+                local lm = makeLinkPreview(d, i, lastOffset)
+                if lm then lm.Parent = currentPreviewModel; return end
+            end
             local p = Instance.new("Part"); p.Name = tostring(i); local pType = d.pt or "Normal"; local shape = "Block"
             if d.shape then shape = d.shape end
             if pType == "Cylinder" then shape = "Cylinder" elseif pType == "Sphere" then shape = "Ball" elseif pType == "Wedge" then shape = "Wedge" elseif pType == "Link" then shape = "Block" end
@@ -1115,8 +1172,9 @@ PreviewBtn.MouseButton1Click:Connect(function()
             p.Transparency = settings.previewTransparency; p.CanCollide = false; p.Anchored = true; p.CastShadow = false; p.Parent = currentPreviewModel
         end)
         if not okP then bad = bad + 1; warn("Preview block " .. i .. ": " .. tostring(err)) end
+        if i % 20 == 0 then task.wait() end
     end
-    updateBoundingPart(); Status.Text = translate("Preview Loaded"); showNotification("Preview loaded: " .. #blocksData .. " blocks" .. (bad > 0 and (" (bad: " .. bad .. ")") or ""), 2, Colors.Success)
+    uploading = false; updateBoundingPart(); Status.Text = translate("Preview Loaded"); showNotification("Preview loaded: " .. #blocksData .. " blocks" .. (bad > 0 and (" (bad: " .. bad .. ")") or ""), 2, Colors.Success)
 end)
 
 MoveBtn.MouseButton1Click:Connect(function()
@@ -1335,7 +1393,7 @@ UploadBtn.MouseButton1Click:Connect(function()
 
                 -- el cubo del preview marca la Base (si el bloque fue redimensionado) o la celda; de ahi sale el CFrame de colocacion
                 local parts = getParts(d)
-                local baseCF = prev.CFrame
+                local baseCF = previewRef(prev)
                 local cf = baseCF
                 if parts then cf = baseCF * CFrame.new(unpack(parts[1].rel)):Inverse() end
 
