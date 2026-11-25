@@ -1326,6 +1326,9 @@ UploadBtn.MouseButton1Click:Connect(function()
                 return true
             end
 
+            -- Los links se colocan arriba (Y~4000) y se mueven con CommitMove: asi el servidor no los rechaza por
+            -- solaparse con bloques ya colocados (por ejemplo bloques invisibles grandes en la misma celda).
+            local linkHigh, linkSpawnN, linkNote = true, 0, nil
             local function processLink(d, prev)
                 local tpl = findTemplate(d.gt)
                 if not tpl then missingTpl[d.gt or "?"] = true; lastReason = "no template: " .. tostring(d.gt); return false, true end
@@ -1345,18 +1348,34 @@ UploadBtn.MouseButton1Click:Connect(function()
                     end
                 end
                 if not inst then
-                    inst = invokePlace(tpl, cf, BrickColor.new(d.gbc or "Institutional white"), getMaterial(d.gm), function(ch)
-                        return ch.Name == d.gt and (gateCF(ch).Position - cf.Position).Magnitude < 1.5
+                    local spawnCF = cf
+                    if linkHigh then
+                        spawnCF = CFrame.new(cf.X, 4000 + (linkSpawnN % 40) * 8, cf.Z) * cf.Rotation
+                        linkSpawnN = linkSpawnN + 1
+                    end
+                    local sp = spawnCF.Position
+                    inst = invokePlace(tpl, spawnCF, BrickColor.new(d.gbc or "Institutional white"), getMaterial(d.gm), function(ch)
+                        return ch.Name == d.gt and (gateCF(ch).Position - sp).Magnitude < 1.5
                     end, function(ch) return ch.Name == d.gt end)
                     if not inst then return false end
                 end
 
                 if not inst:FindFirstChildWhichIsA("BasePart", true) then waitPart(inst) end
-                if not parts and (gateCF(inst).Position - cf.Position).Magnitude > 0.2 then
-                    pcall(function() cm:InvokeServer(inst, cf) end)
-                    local t0 = tick()
-                    while (gateCF(inst).Position - cf.Position).Magnitude > 0.2 and tick() - t0 < 0.6 do task.wait(0.03) end
-                    if (gateCF(inst).Position - cf.Position).Magnitude > 0.2 then posBad = posBad + 1 end
+                local function atTarget() return (gateCF(inst).Position - cf.Position).Magnitude <= 0.2 end
+                if not atTarget() then
+                    for try = 1, 2 do
+                        pcall(function() cm:InvokeServer(inst, cf) end)
+                        local t0 = tick()
+                        while not atTarget() and tick() - t0 < 0.8 do task.wait(0.03) end
+                        if atTarget() then break end
+                    end
+                    if not atTarget() then
+                        posBad = posBad + 1
+                        if linkHigh and gateCF(inst).Position.Y > 3000 then
+                            linkHigh = false -- CommitMove no mueve este tipo de bloque: el resto se coloca directo en su sitio
+                            linkNote = "CommitMove did not move a link block: switched to direct placement"
+                        end
+                    end
                 end
 
                 -- bloques redimensionables (PoweredBlock, TouchTrigger...): CommitResize(modelo, {parte, CFrame, Tamano, parte, CFrame, Tamano, ...})
@@ -1416,7 +1435,7 @@ UploadBtn.MouseButton1Click:Connect(function()
             end
 
             -- trabajo pendiente = cubos del preview que siguen existiendo
-            local todo = {}
+            local todo, todoL, todoB = {}, {}, {}
             for i = 1, total do
                 local d = blocksData[i]
                 local prev = model:FindFirstChild(tostring(i))
@@ -1424,13 +1443,15 @@ UploadBtn.MouseButton1Click:Connect(function()
                     if (d.pt == "Link" and not settings.loadLinks) or (d.pt == "InvisibleLight" and not settings.loadInvLights) or (d.pt == "Invisible" and settings.dontBuildInvBlocks) then
                         skippedCount = skippedCount + 1; prev:Destroy()
                     else
-                        todo[#todo + 1] = i
+                        if d.pt == "Link" then todoL[#todoL + 1] = i else todoB[#todoB + 1] = i end
                     end
                 elseif d then
                     doneBefore = doneBefore + 1
                 end
             end
 
+            for _, i in ipairs(todoL) do todo[#todo + 1] = i end -- links primero
+            for _, i in ipairs(todoB) do todo[#todo + 1] = i end
             local work = #todo
             local function progress(n)
                 local percent = work > 0 and (n / work) or 1
@@ -1546,6 +1567,7 @@ UploadBtn.MouseButton1Click:Connect(function()
                 Status.Text = translate("Upload Finished") .. " (new " .. placedCount .. ", failed " .. failedCount .. ", adopted " .. adoptedCount .. ", skipped " .. skippedCount .. ", already " .. doneBefore .. ", links " .. wiredCount .. ")"
                     .. ((cfgFails + posBad + wireBad + sizeBad) > 0 and (" | cfgFail:" .. cfgFails .. " posOff:" .. posBad .. " sizeOff:" .. sizeBad .. " wireOff:" .. wireBad) or "")
                     .. (#missingNames > 0 and (" | no template: " .. table.concat(missingNames, ",")) or "")
+                    .. (linkNote and (" | " .. linkNote) or "")
                     .. (aborted and " | STOPPED: server rejected 12 placements in a row (block limit or cooldown?)" or "")
                     .. (remaining > 0 and (" | pending " .. remaining .. " (press UPLOAD to retry; reasons in PiggyMaps/upload_log.txt)") or "")
                 task.spawn(showNotification, "Upload finished: " .. placedCount .. " placed, " .. failedCount .. " failed, " .. wiredCount .. " links", 3, failedCount == 0 and Colors.Success or Colors.Accent)
